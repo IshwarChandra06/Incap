@@ -246,31 +246,16 @@ public class CorsightDeviceServiceImpl{
 				event.setName(employee.getName());
 				event.setDepartment(employee.getDepartment());
 			}
-			else {
-				employee= new Employee();
-				employee.setEmpId((String) matchDataObject.get(CorsightDeviceConstants.POI_DISPLAY_NAME));
-				event.setEmpId((String) matchDataObject.get(CorsightDeviceConstants.POI_DISPLAY_NAME));
-			}
+//			else {
+//				employee= new Employee();
+//				employee.setEmpId((String) matchDataObject.get(CorsightDeviceConstants.POI_DISPLAY_NAME));
+//				event.setEmpId((String) matchDataObject.get(CorsightDeviceConstants.POI_DISPLAY_NAME));
+//			}
 //			setWatchlistDetails(employee,matchDataObject, event);
 			employeeRepository.save(employee);
 		}
 	}
 
-//	private void setWatchlistDetails(Employee employee, JSONObject matchDataObject, Transaction transaction) {
-//		JSONArray watchArray = (JSONArray) matchDataObject.get(CorsightDeviceConstants.WATCHLISTS);
-//		if(!watchArray.isEmpty() && null!=watchArray) {
-//			JSONObject watchobj =(JSONObject) watchArray.get(0);
-//			transaction.setWatchlistId((String) watchobj.get(CorsightDeviceConstants.WATCHLIST_ID));
-//			transaction.setWatchlistName((String) watchobj.get(CorsightDeviceConstants.DISPLAY_NAME));
-//			transaction.setArea((String) watchobj.get(CorsightDeviceConstants.DISPLAY_NAME));
-//			transaction.setEmployeeType((String) watchobj.get(CorsightDeviceConstants.DISPLAY_NAME));
-//			
-//			if(null==employee.getEmployeeType()) {
-//				employee.setEmployeeType((String) watchobj.get(CorsightDeviceConstants.DISPLAY_NAME));
-//				employeeRepository.save(employee);
-//			}
-//		}
-//	}
 
 	private void setTransactionDate(DateFormat dateFormat, DateFormat timeFormat, Date punchDate, Transaction event) {
 		String dateString = dateFormat.format(punchDate);
