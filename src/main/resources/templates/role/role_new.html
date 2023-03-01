@@ -44,15 +44,6 @@
 									<input type="hidden" th:value="${title}" name="title" class="form-control mb-4 col-4">
 									
 									<div class="form-group">
-										<label><b>Organization:</b></label> 
-										<select name="organization" th:field="*{organization}" class="form-control">
-											<option value="">Select Organization</option>
-											<option th:each="organization : ${listOrganization}"
-												th:value="${organization.id}" 
-												th:text="${organization.name}">
-										</select>
-									</div> 
-									<div class="form-group">
 										<label><b>Name:<font color="red">*</font></b></label> 
 										<p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="alert alert-danger"></p> 
 										<input type="text" th:field="*{name}" placeholder="Enter Role Name" maxlength="50" class="form-control">

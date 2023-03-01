@@ -50,10 +50,10 @@ public class DailyReportController {
 	
 	@RequestMapping(value = "/api/search/daily-reports", method = RequestMethod.GET)
 	@PreAuthorize("hasAuthority('dailyreport_view')")
-	public @ResponseBody PaginationDto<DailyReport> search(Long id, String sDate,String eDate, String employeeId, String employeeName, String department,
-			String status,String shift,int pageno, String sortField, String sortDir) {
+	public @ResponseBody PaginationDto<DailyReport> search(String sDate,String eDate, String employeeId, String employeeName, String department,
+			String status,int pageno, String sortField, String sortDir) {
 		
-		PaginationDto<DailyReport> dtoList = dailyAttendanceService.searchByField(id, sDate, eDate, employeeId, employeeName, department, status,shift, pageno, sortField, sortDir);
+		PaginationDto<DailyReport> dtoList = dailyAttendanceService.searchByField(sDate, eDate, employeeId, employeeName, department, status, pageno, sortField, sortDir);
 		
 		return dtoList;
 	}
@@ -68,8 +68,8 @@ public class DailyReportController {
 	
 	@RequestMapping(value="/api/daily-attendance/export-to-file",method = RequestMethod.GET)
 	@PreAuthorize("hasAuthority('dailyreport_export')")
-	public void exportToFile(HttpServletResponse response, Long id, String sDate, String eDate, String employeeName,String employeeId, 
-			 String department,String status,String shift, String flag) {
+	public void exportToFile(HttpServletResponse response, String sDate, String eDate, String employeeName,String employeeId, 
+			 String department,String status,String flag) {
 		 response.setContentType("application/octet-stream");
 			DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
 			String currentDateTime = dateFormat.format(new Date());
@@ -77,7 +77,7 @@ public class DailyReportController {
 			String headerValue = "attachment; filename=Daily_Report" + currentDateTime + "."+flag;
 			response.setHeader(headerKey, headerValue);
 		try {
-			exportDailyReports.fileExportBySearchValue(response, id, sDate, eDate, employeeName,employeeId,department,status,shift, flag);
+			exportDailyReports.fileExportBySearchValue(response,sDate, eDate, employeeName,employeeId,department,status, flag);
 		} catch (Exception  e) {
 			e.printStackTrace();
 		}

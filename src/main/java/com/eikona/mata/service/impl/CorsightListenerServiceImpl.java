@@ -105,22 +105,24 @@ public class CorsightListenerServiceImpl {
 	}
 	public void setEmployeeDetailsToTransaction(Data eventData, Transaction transaction) {
 		if (null != eventData.getMatch_data().getPoi_id()) {
+			transaction.setEmpId(eventData.getMatch_data().getPoi_display_name());
 			Employee employee = employeeRepository.findByEmpIdAndIsDeletedFalse(eventData.getMatch_data().getPoi_display_name());
 
 			if (null != employee) {
-				transaction.setEmpId(employee.getEmpId());
 				transaction.setUniqueId(employee.getUniqueId());
 				transaction.setName(employee.getName());
 				transaction.setDepartment(employee.getDepartment());
 //				if(null!=employee.getShift())
 //					transaction.setShift(employee.getShift());
+				employeeRepository.save(employee);
 			}
+			
 //			else {
 //				employee= new Employee();
 //				employee.setEmpId(eventData.getMatch_data().getPoi_display_name());
 //				transaction.setEmpId(eventData.getMatch_data().getPoi_display_name());
 //			}
-			employeeRepository.save(employee);	
+				
 			
 			DecimalFormat dec = new DecimalFormat(ApplicationConstants.DECIMAL_FORMAT);
 			transaction.setPoiId(eventData.getMatch_data().getPoi_id());

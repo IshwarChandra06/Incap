@@ -43,8 +43,8 @@ public class ExportDailyReports {
 	@Autowired
 	private CalendarUtil calendarUtil;
  
-	public void fileExportBySearchValue(HttpServletResponse response, Long id, String sDate, String eDate, String employeeName,
-			String employeeId, String department,String status, String shift,String flag) throws ParseException, IOException {
+	public void fileExportBySearchValue(HttpServletResponse response,String sDate, String eDate, String employeeName,
+			String employeeId, String department,String status,String flag) throws ParseException, IOException {
 
 		Date startDate = null;
 		Date endDate = null;
@@ -59,24 +59,22 @@ public class ExportDailyReports {
 			}
 		}
 		
-		List<DailyReport> dailyAttendanceList = getListOfDailyAttendance(id, employeeName, employeeId, 
-				department, status, startDate, endDate,shift);
+		List<DailyReport> dailyAttendanceList = getListOfDailyAttendance( employeeName, employeeId, 
+				department, status, startDate, endDate);
 		
 		excelGenerator(response, dailyAttendanceList);
 	}
 	
-	private List<DailyReport> getListOfDailyAttendance(Long id, String employeeName, String employeeId, 
-			String department, String status, Date startDate, Date endDate, String shift) {
+	private List<DailyReport> getListOfDailyAttendance(String employeeName, String employeeId, 
+			String department, String status, Date startDate, Date endDate) {
 		
-		Specification<DailyReport> idSpec = generalSpecification.longSpecification(id, ApplicationConstants.ID);
 		Specification<DailyReport> dateSpec = generalSpecification.dateSpecification(startDate, endDate,ApplicationConstants.DATE);
 		Specification<DailyReport> employeeNameSpec = generalSpecification.stringSpecification(employeeName,DailyAttendanceConstants.EMPLOYEE_NAME);
 		Specification<DailyReport> employeeIdSpec = generalSpecification.stringSpecification(employeeId,DailyAttendanceConstants.EMPLOYEE_ID);
     	Specification<DailyReport> deptSpec = generalSpecification.stringSpecification(department,DailyAttendanceConstants.DEPARTMENT); 
     	Specification<DailyReport> statusSpec = generalSpecification.stringSpecification(status,DailyAttendanceConstants.ATTENDANCE_STATUS);
-    	Specification<DailyReport> shiftSpec = generalSpecification.stringSpecification(shift,DailyAttendanceConstants.SHIFT);
 		
-		List<DailyReport> dailyAttendanceList =dailyAttendanceRepository.findAll(idSpec.and(dateSpec).and(employeeNameSpec).and(employeeIdSpec).and(deptSpec).and(statusSpec).and(shiftSpec));
+		List<DailyReport> dailyAttendanceList =dailyAttendanceRepository.findAll(dateSpec.and(employeeNameSpec).and(employeeIdSpec).and(deptSpec).and(statusSpec));
 		return dailyAttendanceList;
 	}
 	
@@ -147,23 +145,7 @@ public class ExportDailyReports {
 			cell.setCellStyle(cellStyle);
 
 			cell = row.createCell(columnCount++);
-			cell.setCellValue(dailyAttendance.getAttendanceStatus());
-			cell.setCellStyle(cellStyle);
-			
-			cell = row.createCell(columnCount++);
 			cell.setCellValue(dailyAttendance.getDepartment());
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
-			cell.setCellValue(dailyAttendance.getShift());
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
-			cell.setCellValue(dailyAttendance.getShiftInTime());
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
-			cell.setCellValue(dailyAttendance.getShiftOutTime());
 			cell.setCellStyle(cellStyle);
 
 			cell = row.createCell(columnCount++);
@@ -179,39 +161,14 @@ public class ExportDailyReports {
 			cell.setCellStyle(cellStyle);
 
 			cell = row.createCell(columnCount++);
-			if(null!=dailyAttendance.getEarlyComing())
-				cell.setCellValue(dailyAttendance.getEarlyComing());
-			else
-				cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
-			if(null!=dailyAttendance.getLateGoing())
-				cell.setCellValue(dailyAttendance.getLateGoing());
-			else
-				cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
-			if(null!=dailyAttendance.getEarlyGoing())
-				cell.setCellValue(dailyAttendance.getEarlyGoing());
-			else
-				cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
-			cell.setCellStyle(cellStyle);
-			
-			cell = row.createCell(columnCount++);
-			if(null!=dailyAttendance.getLateComing())
-				cell.setCellValue(dailyAttendance.getLateComing());
-			else
-				cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
 			cell.setCellValue(dailyAttendance.getMissedOutPunch());
 			cell.setCellStyle(cellStyle);
 			
 			cell = row.createCell(columnCount++);
-			cell.setCellValue(dailyAttendance.getEmpInLocation());
+			if(null!=dailyAttendance.getEmpInLocation())
+			  cell.setCellValue(dailyAttendance.getEmpInLocation());
+			else
+			  cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
 			cell.setCellStyle(cellStyle);
 
 			cell = row.createCell(columnCount++);
@@ -221,16 +178,6 @@ public class ExportDailyReports {
 				cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
 			cell.setCellStyle(cellStyle);
 			
-			cell = row.createCell(columnCount++);
-			cell.setCellValue(dailyAttendance.getEmpInAccessType());
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
-			if(null!=dailyAttendance.getEmpOutAccessType())
-				cell.setCellValue(dailyAttendance.getEmpOutAccessType());
-			else
-				cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);
-			cell.setCellStyle(cellStyle);
 
 		}
 	}
@@ -250,24 +197,8 @@ public class ExportDailyReports {
 		cell.setCellValue(HeaderConstants.EMPLOYEE_NAME);
 		cell.setCellStyle(cellStyle);
 
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.ATTENDANCE_STATUS);
-		cell.setCellStyle(cellStyle);
-
 	    cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.DEPARTMENT);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.SHIFT);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.SHIFT_IN_TIME);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.SHIFT_OUT_TIME);
 		cell.setCellStyle(cellStyle);
 
 		cell = row.createCell(columnCount++);
@@ -283,22 +214,6 @@ public class ExportDailyReports {
 		cell.setCellStyle(cellStyle);
 
 		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.EARLY_COMING);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.LATE_GOING);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.EARLY_GOING);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.LATE_COMING);
-		cell.setCellStyle(cellStyle);
-		
-		cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.MISSED_OUT_PUNCH);
 		cell.setCellStyle(cellStyle);
 		
@@ -310,12 +225,5 @@ public class ExportDailyReports {
 		cell.setCellValue(HeaderConstants.EMP_OUT_LOCATION);
 		cell.setCellStyle(cellStyle);
 		
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.EMP_IN_ACCESS_TYPE);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.EMP_OUT_ACCESS_TYPE);
-		cell.setCellStyle(cellStyle);
 	}
 }

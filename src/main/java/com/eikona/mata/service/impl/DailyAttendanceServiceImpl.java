@@ -104,7 +104,7 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 					DailyReport dailyReport = null;
 					
 					Date currDate = format.parse(transaction.getPunchDateStr());
-					if(transaction.getOrganization().contains("Incap")  && transaction.getPunchDate().getHours() < 8) {
+					if(transaction.getPunchDate().getHours() < 9) {
 						
 						Calendar currDateCal = Calendar.getInstance();
 						currDateCal.setTime(currDate);
@@ -114,7 +114,7 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 						DailyReport dailyReportYesterday = dailyAttendanceRepository.findByEmpIdAndDate(transaction.getEmpId().trim(),currDate);
 						
 						if(null!=dailyReportYesterday) {
-							if(Integer.parseInt(dailyReportYesterday.getEmpInTime().split(":")[0]) < 20) {
+							if(Integer.parseInt(dailyReportYesterday.getEmpInTime().split(":")[0]) < 17) {
 								currDate = format.parse(transaction.getPunchDateStr());
 							}else {
 								key = dailyReportYesterday.getEmpId() + "-" + dailyReportYesterday.getDateStr();
@@ -137,118 +137,51 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 						dailyReport.setDateStr(transaction.getPunchDateStr());
 						dailyReport.setDate(format.parse(transaction.getPunchDateStr()));
 						dailyReport.setEmployeeName(transaction.getName());
-						dailyReport.setOrganization(transaction.getOrganization());
 						dailyReport.setDepartment(transaction.getDepartment());
-						dailyReport.setUserType("Employee");
 						dailyReport.setMissedOutPunch(true);
 						dailyReport.setEmpInTime(transaction.getPunchTimeStr());
-						dailyReport.setEmpInTemp(transaction.getTemperature());
-						dailyReport.setEmpInMask(transaction.getWearingMask());
-						dailyReport.setEmpInAccessType(transaction.getAccessType());
 						dailyReport.setEmpInLocation(transaction.getDeviceName());
 						dailyReport.setAttendanceStatus("Present");
-						String city = "";
-						 if(transaction.getOrganization().contains("Incap") && null!=transaction.getShift()) {
-							city = "Tumkur";
-							
-							dailyReport.setShift(transaction.getShift().getName());
-							dailyReport.setShiftInTime(timeFormat.format(transaction.getShift().getStartTime()));
-							dailyReport.setShiftOutTime(timeFormat.format(transaction.getShift().getEndTime()));
-							
-//							dailyReport.setShift("General");
-//							dailyReport.setShiftInTime("09:00:00");
-//							dailyReport.setShiftOutTime("17:30:00");
-//							
-//							int hour = Integer.parseInt(transaction.getPunchTimeStr().split(":")[0]);
-//							if(hour <= 7) {
-//									dailyReport.setShift("1st Shift"); //5:30 to 13:00
-//									dailyReport.setShiftInTime("06:00:00"); 
-//									dailyReport.setShiftOutTime("14:00:00");
-//							}
-//							
-//							if(hour >= 12) {
-//									dailyReport.setShift("2nd Shift"); //13:30 to 20:30
-//									dailyReport.setShiftInTime("14:00:00");
-//									dailyReport.setShiftOutTime("22:00:00");
-//							}
-//							
-//							if(hour >= 20) {
-//								dailyReport.setShift("3rd Shift"); //21:30 to 4:30 9to 5:30 
-//								dailyReport.setShiftInTime("22:00:00");
-//								dailyReport.setShiftOutTime("06:00:00");
-//							}
-						}
+						if(Integer.parseInt(dailyReport.getEmpInTime().split(":")[0])>=17) 
+							dailyReport.setShift("N");
 						
-						dailyReport.setCity(city);
-	
-						LocalTime shiftIn = LocalTime.parse(dailyReport.getShiftInTime());
-						LocalTime empIn = LocalTime.parse(dailyReport.getEmpInTime().replace("'", ""));
-	
-						Long lateComing = shiftIn.until(empIn, ChronoUnit.MINUTES);
-						Long earlyComing = empIn.until(shiftIn, ChronoUnit.MINUTES);
-	
-						if (earlyComing > 0)
-							dailyReport.setEarlyComing(earlyComing);
-	
-						if (lateComing > 0)
-							dailyReport.setLateComing(lateComing);
-						
-						dailyReport.setCity(city);
-						reportMap.put(key, dailyReport);
-					} else {
-						
-						dailyReport = reportMap.get(key);
-						if (dailyReport.getEmpInTime().equalsIgnoreCase(transaction.getPunchTimeStr())) {
-							continue;
+							reportMap.put(key, dailyReport);
 						} else {
 							
-							dailyReport.setEmpOutTime(transaction.getPunchTimeStr());
-							dailyReport.setEmpOutTemp(transaction.getTemperature());
-							dailyReport.setEmpOutMask(transaction.getWearingMask());
-							dailyReport.setEmpOutAccessType(transaction.getAccessType());
-							dailyReport.setEmpOutLocation(transaction.getDeviceName());
-	
-							dailyReport.setMissedOutPunch(false);
-	
-							LocalTime shiftIn = LocalTime.parse(dailyReport.getShiftInTime());
-							LocalTime shiftOut = LocalTime.parse(dailyReport.getShiftOutTime());
-							LocalTime empIn = LocalTime.parse(dailyReport.getEmpInTime());
-							LocalTime empOut = LocalTime.parse(dailyReport.getEmpOutTime());
-	
-							Long shiftMinutes = shiftIn.until(shiftOut, ChronoUnit.MINUTES);
-	
-							Long workHours = empIn.until(empOut, ChronoUnit.HOURS);
-							Long workMinutes = empIn.until(empOut, ChronoUnit.MINUTES);
-							
-							workMinutes = workMinutes % 60;
-							
-							if(workHours<0) {
-								workHours = 24 + workHours;
-								workMinutes = 60 + workMinutes;
-							}
-							
-	
-							dailyReport.setWorkTime(String.valueOf(workHours) + ":" + String.valueOf(workMinutes % 60));
-	
-							Long overTime = workMinutes - shiftMinutes;
-	
-							Long lateGoing = shiftOut.until(empOut, ChronoUnit.MINUTES);
-							Long earlyGoing = empOut.until(shiftOut, ChronoUnit.MINUTES);
-	
-							
-							if (lateGoing > 0)
-								dailyReport.setLateGoing(lateGoing);
-	
-							if (earlyGoing > 0) {
-								dailyReport.setEarlyGoing(earlyGoing);
+							dailyReport = reportMap.get(key);
+							if (dailyReport.getEmpInTime().equalsIgnoreCase(transaction.getPunchTimeStr())) {
+								continue;
 							} else {
-								dailyReport.setEarlyGoing(null);
-							}
-	
-							if (overTime > 0)
-								dailyReport.setOverTime(overTime);
-							
-							reportMap.put(key, dailyReport);
+								
+								dailyReport.setEmpOutTime(transaction.getPunchTimeStr());
+								dailyReport.setEmpOutLocation(transaction.getDeviceName());
+		
+								dailyReport.setMissedOutPunch(false);
+		
+								LocalTime empIn = LocalTime.parse(dailyReport.getEmpInTime());
+								LocalTime empOut = LocalTime.parse(dailyReport.getEmpOutTime());
+		
+								
+		
+								Long workHours = empIn.until(empOut, ChronoUnit.HOURS);
+								Long workMinutes = empIn.until(empOut, ChronoUnit.MINUTES);
+								
+								if(workHours<0) {
+									workHours = 24 + workHours;
+									workMinutes = 60 + workMinutes;
+								}
+								
+		
+								dailyReport.setWorkTime(String.valueOf(workHours) + ":" + String.valueOf(workMinutes % 60));
+								
+								if("N".equalsIgnoreCase(dailyReport.getShift()) && (Integer.parseInt(dailyReport.getEmpOutTime().split(":")[0])<=9)) {
+									Long tillMidNight=empIn.until(LocalTime.parse("23:59:59"), ChronoUnit.MINUTES);
+									Long afterMidNight=LocalTime.parse("00:00:00").until(empOut, ChronoUnit.MINUTES);
+									workMinutes =tillMidNight+afterMidNight;
+									dailyReport.setWorkTime(String.valueOf(workMinutes/60) + ":" + String.valueOf(workMinutes % 60));
+								} 
+								
+								reportMap.put(key, dailyReport);
 						}
 					}
 				} catch (ParseException e) {
@@ -269,7 +202,7 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 
 
 	@Override
-	public PaginationDto<DailyReport> searchByField(Long id, String sDate, String eDate, String employeeId,String employeeName,String department, String status,String shift, int pageno,String sortField, String sortDir) {
+	public PaginationDto<DailyReport> searchByField(String sDate, String eDate, String employeeId,String employeeName,String department, String status, int pageno,String sortField, String sortDir) {
 
 		Date startDate = null;
 		Date endDate = null;
@@ -293,8 +226,8 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 		
 		
 		
-		Page<DailyReport> page = getDailyAttendancePage(id, employeeId, employeeName, department,
-				pageno, sortField, sortDir, startDate, endDate, status,shift);
+		Page<DailyReport> page = getDailyAttendancePage( employeeId, employeeName, department,
+				pageno, sortField, sortDir, startDate, endDate, status);
 		List<DailyReport> employeeShiftList = page.getContent();
 
 		sortDir = (ApplicationConstants.ASC.equalsIgnoreCase(sortDir)) ? ApplicationConstants.DESC : ApplicationConstants.ASC;
@@ -304,23 +237,21 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 		return dtoList;
 	}
 	
-	private Page<DailyReport> getDailyAttendancePage(Long id, String employeeId, String employeeName,
+	private Page<DailyReport> getDailyAttendancePage(String employeeId, String employeeName,
 			String department,  int pageno, String sortField, String sortDir, Date startDate,
-			Date endDate, String status,String shift) {
+			Date endDate, String status) {
 		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortField).ascending()
 				: Sort.by(sortField).descending();
 
 		Pageable pageable = PageRequest.of(pageno - NumberConstants.ONE, NumberConstants.TEN, sort);
 
-		Specification<DailyReport> idSpec = generalSpecificationDailyAttendance.longSpecification(id, ApplicationConstants.ID);
 		Specification<DailyReport> dateSpec = generalSpecificationDailyAttendance.dateSpecification(startDate, endDate, ApplicationConstants.DATE);
 		Specification<DailyReport> empIdSpec = generalSpecificationDailyAttendance.stringSpecification(employeeId, DailyAttendanceConstants.EMPLOYEE_ID);
 		Specification<DailyReport> empNameSpec = generalSpecificationDailyAttendance.stringSpecification(employeeName, DailyAttendanceConstants.EMPLOYEE_NAME);
 		Specification<DailyReport> deptSpec = generalSpecificationDailyAttendance.stringSpecification(department, DailyAttendanceConstants.DEPARTMENT);
 		Specification<DailyReport> statusSpec = generalSpecificationDailyAttendance.stringSpecification(status, DailyAttendanceConstants.ATTENDANCE_STATUS);
-		Specification<DailyReport> shiftSpec = generalSpecificationDailyAttendance.stringSpecification(shift, DailyAttendanceConstants.SHIFT);
-		Page<DailyReport> page = dailyAttendanceRepository.findAll(statusSpec.and(idSpec).and(dateSpec).and(empIdSpec)
-				.and(empNameSpec).and(deptSpec).and(shiftSpec), pageable);
+		Page<DailyReport> page = dailyAttendanceRepository.findAll(statusSpec.and(dateSpec).and(empIdSpec)
+				.and(empNameSpec).and(deptSpec), pageable);
 		return page;
 	}
 

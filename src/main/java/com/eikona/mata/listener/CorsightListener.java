@@ -20,8 +20,6 @@ public class CorsightListener {
 	@Autowired
 	private CorsightListenerServiceImpl corsightListenerServiceImpl;
 	
-	
-	
 	@PostMapping(path = DeviceListenerConstants.CORSIGHT_LISTENER_API)
 	public ResponseEntity<String> corsightHeartReportInfo(@RequestBody JSONObject request) throws ParseException {
 

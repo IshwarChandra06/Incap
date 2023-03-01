@@ -77,12 +77,10 @@
 						<div class="form-group form-focus select-focus">
 						 	<label ><b>Add Filter:</b></label>
 					        <select id="people" name="people" multiple>
-								<option value="id" >Id</option>
 								<option value="date" >Date</option>
 								<option value="employeeId" >Employee Id</option>
 								<option value="employeeName" >Employee Name</option>
 								<option value="department" >Department</option>
-								<option value="shift">Shift</option>
 								<option value="status" >Status</option>
 					        </select>
 						</div>
@@ -93,13 +91,11 @@
 					</div>
 				</div>
 				<div style="display:none">
-					<input type="hidden" id="orginalById">
 					<input type="hidden" id="orginalByStartDate">
 					<input type="hidden" id="orginalByEndDate">
 					<input type="hidden" id="orginalByEmployeeId">
 					<input type="hidden" id="orginalByEmployeeName">
 					<input type="hidden" id="orginalByDepartment">
-					<input type="hidden" id="orginalByShift">
 					<input type="hidden" id="orginalByStatus">
 				</div>
 				<div id= "input-field" class="row">
@@ -212,45 +208,44 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('orginalById').value;
+				
                 var employeeId= document.getElementById('orginalByEmployeeId').value;
                 var employeeName = document.getElementById('orginalByEmployeeName').value;
                 var department = document.getElementById('orginalByDepartment').value;
                 var status = document.getElementById('orginalByStatus').value;
-                var shift = document.getElementById('orginalByShift').value;
+               
                 var sDate = "";
-//                 var sDate = new Date().toISOString().slice(0, 10);
 				
-				ajaxCall(id, sDate, sDate, employeeId, employeeName, department,status,shift, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(sDate, sDate, employeeId, employeeName, department,status, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
 				
         	})
         	//end sort 
         	
         	$(function(){
-        		var id = document.getElementById('orginalById').value;
+        		
                 var employeeId= document.getElementById('orginalByEmployeeId').value;
                 var employeeName = document.getElementById('orginalByEmployeeName').value;
                 var department = document.getElementById('orginalByDepartment').value;
-                 var shift = document.getElementById('orginalByShift').value;
-                var sDate = "";//new Date().toISOString().slice(0, 10);
+                
+                var sDate = "";
                 var status = document.getElementById('orginalByStatus').value;
 				
-				ajaxCall(id, sDate, sDate, employeeId, employeeName, department,status,shift, "sortByField", "previousPage", 1,"id","desc");
+				ajaxCall(sDate, sDate, employeeId, employeeName, department,status, "sortByField", "previousPage", 1,"id","desc");
         	})
         	
 			$(document).on('click', '.previousPage', function(e) {
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('orginalById').value;
+				
                 var employeeId= document.getElementById('orginalByEmployeeId').value;
                 var employeeName = document.getElementById('orginalByEmployeeName').value;
                 var department = document.getElementById('orginalByDepartment').value;
  				var status = document.getElementById('orginalByStatus').value;
- 				 var shift = document.getElementById('orginalByShift').value;
- 				var sDate = "";//new Date().toISOString().slice(0, 10);
+ 				
+ 				var sDate = "";
 				
-				ajaxCall(id, sDate, sDate, employeeId, employeeName, department, status,shift, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(sDate, sDate, employeeId, employeeName, department, status, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
         	})
 			
 			//start search and sort field
@@ -258,16 +253,16 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('id').value;
+				
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
                 var employeeId= document.getElementById('employeeId').value;
                 var employeeName = document.getElementById('employeeName').value;
                 var department = document.getElementById('department').value;
 				var status = document.getElementById('status').value;
-				var shift = document.getElementById('shift').value;
+				
 				checkDate();
-				ajaxCall(id, sDate, eDate, employeeId, employeeName, department, status,shift, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(sDate, eDate, employeeId, employeeName, department, status, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
 				
         	})
         	//end search and sort field
@@ -276,30 +271,30 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('id').value;
+				
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
                 var employeeId= document.getElementById('employeeId').value;
                 var employeeName = document.getElementById('employeeName').value;
                 var department = document.getElementById('department').value;
 				var status = document.getElementById('status').value;
-				var shift = document.getElementById('shift').value;
+				
 				 checkDate();
-				ajaxCall(id, sDate, eDate, employeeId, employeeName, department,status,shift, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(sDate, eDate, employeeId, employeeName, department,status, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
         	})
 			
         	$(document).on('click', '.searchButtonField', function(e) {
         		
-        		var id = document.getElementById('id').value;
+        		
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
                 var employeeId= document.getElementById('employeeId').value;
                 var employeeName = document.getElementById('employeeName').value;
                 var department = document.getElementById('department').value;
                 var status = document.getElementById('status').value;
-                 var shift = document.getElementById('shift').value;
+                 
                  checkDate();
-                ajaxCall(id, sDate, eDate, employeeId, employeeName,  department,status,shift, "sortBySearchField", "nextPage", 1,"id","desc");
+                ajaxCall(sDate, eDate, employeeId, employeeName,  department,status,"sortBySearchField", "nextPage", 1,"id","desc");
         	})
         	
         	function checkDate() {
@@ -322,16 +317,14 @@
 				}
 		}
 	        	
-	        function ajaxCall(id, sDate, eDate, employeeId, employeeName,  department,status,shift, headFlag, pageFlag, pageno, sortField,sortDir) {
+	        function ajaxCall(sDate, eDate, employeeId, employeeName, department,status, headFlag, pageFlag, pageno, sortField,sortDir) {
 				var data = {
-	           		"id" : id,
 	           		"sDate":sDate,
 	           		"eDate":eDate,
 	           		"employeeId":employeeId,
 	           		"employeeName":employeeName,
 	           		"department":department,
 	           		"status":status,
-	           		"shift":shift,
 	           		"pageno":pageno,
 	           		"sortField":sortField,
 	           		"sortDir":sortDir
@@ -364,47 +357,28 @@
 	        function tableHeader(result, flag) {
 				var table_header ='';
 				if(result.data.length == 0) {
-					table_header = '<th><b>Id</b></th>'+
+					table_header =
 					'<td><b>Date</b></td>'+
 					'<td><b>Employee Id </b></td>'+
 					'<td><b>Employee Name</b></td>'+
-					'<th><b>Attendance Status</th>'+
 					'<td><b>Department</b></td>'+
-					'<td><b>Shift</b></td>'+
-					'<th><b>Shift In Time</b></th>'+
-					'<th><b>Shift Out Time</b></th>'+
 					'<th><b>Employee In Time</b></th>'+
 					'<th><b>Employee Out Time</b></th>'+
 					'<th><b>Work Time</b></th>'+
-					'<th><b>Early Coming</b></th>'+
-					'<th><b>Late Going</b></th>'+
-					'<th><b>Early Going</b></th>'+
-					'<th><b>Late Coming</b></th>'+
 					'<th><b>Missed Out Punch</b></th>'+
 					'<th><b>Employee In Location</b></th>'+
-					'<th><b>Employee Out Location</b></th>'+
-					'<th><b>Employee In Access Type</b></th>'+
-					'<th><b>Employee Out Access Type</b></th>';
+					'<th><b>Employee Out Location</b></th>';
 						
 						
 				}else {
-					table_header = '<th><button  value="'+result.page_number+'-id-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Id</b></button>'+
-		   			'</th><th>'+
+					table_header = '<th>'+
 		   				'<button  value="'+result.page_number+'-dateStr-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Date</b></button>'+
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-empId-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee Id</b></button>'+
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-employeeName-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee Name</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-attendanceStatus-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Attendance Status</b></button>'+
 		   			'</th><th>'+	
 	   					'<button  value="'+result.page_number+'-department-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Department</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-shift-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Shift</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-shiftInTime-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Shift In Time</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-shiftOutTime-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Shift Out Time</b></button>'+
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-empInTime-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee In Time</b></button>'+
 		   			'</th><th>'+
@@ -412,23 +386,11 @@
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-workTime-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Work Time</b></button>'+
 		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-earlyComing-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Early Coming</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-lateGoing-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Late Going</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-earlyGoing-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Early Going</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-lateComing-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Late Coming</b></button>'+
-		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-missedOutPunch-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Missed Out Punch</b></button>'+
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-empInLocation-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee In Location</b></button>'+
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-empInLocation-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee Out Location</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-empInAccessType-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee In Access Type</b></button>'+
-		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-empOutAccessType-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee Out Access Type</b></button>'+
 		   			'</th>';
 				}
 				return table_header;
@@ -437,27 +399,17 @@
 			function tableData(result) {
 				var table_data ='';
            		$.each(result.data, function(i, customer) {
-           			table_data +='<tr><td>' + customer.id + '</td>' +
+           			table_data +='<tr>'+
 	           		'<td>' + customer.dateStr + '</td>' +
 	            	'<td>' + customer.empId + '</td>' +
 	            	'<td>'+ ((null != customer.employeeName)?customer.employeeName.toLocaleUpperCase():'')+'</td>'+
-	            	'<td>' + ((null != customer.attendanceStatus)?customer.attendanceStatus:'')+ '</td>' +
 	            	'<td>' + ((null != customer.department)?customer.department:'')+ '</td>'+
-               		'<td>' + ((null != customer.shift)?customer.shift:'')+ '</td>' +
-               		'<td>' + ((null != customer.shiftInTime)?customer.shiftInTime:'')+ '</td>' +
-               		'<td>' + ((null != customer.shiftOutTime)?customer.shiftOutTime:'')+ '</td>' +
                		'<td>' + ((null != customer.empInTime)?customer.empInTime:'')+ '</td>' +
                		'<td>' + ((null != customer.empOutTime)?customer.empOutTime:'')+ '</td>' +
                		'<td>' + ((null != customer.workTime)?customer.workTime:'') + '</td>'+
-               		'<td>' + ((null != customer.earlyComing)?customer.earlyComing:'') + '</td>'+
-               		'<td>' + ((null != customer.lateGoing)?customer.lateGoing:'') + '</td>'+
-               		'<td>' + ((null != customer.earlyGoing)?customer.earlyGoing:'') + '</td>'+
-               		'<td>' + ((null != customer.lateComing)?customer.lateComing:'') + '</td>'+
                		'<td>' + ((null != customer.missedOutPunch)?customer.missedOutPunch:'')+ '</td>' +
                		'<td>' + ((null != customer.empInLocation)?customer.empInLocation:'')+ '</td>' +
                		'<td>' + ((null != customer.empOutLocation)?customer.empOutLocation:'') + '</td>'+
-               		'<td>' + ((null != customer.empInAccessType)?customer.empInAccessType:'')+ '</td>' +
-               		'<td>' + ((null != customer.empOutAccessType)?customer.empOutAccessType:'') + '</td>'+
                		'</tr>';
            		});
            		return table_data;
@@ -613,16 +565,16 @@
 			$(document).on('click', '.export-data-by-search', function(e) {
 				
 				var type = $(this).val();
-				var id = document.getElementById('id').value;
+				
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
 	            var employeeName = document.getElementById('employeeName').value;
 	            var employeeId = document.getElementById('employeeId').value;
 	            var department = document.getElementById('department').value;
 				var status = document.getElementById('status').value;
-				var shift = document.getElementById('shift').value;
+				
                 if("excel" == type){
-                	exportData(id,sDate,eDate,employeeName,employeeId,department,status,shift,"xlsx");
+                	exportData(sDate,eDate,employeeName,employeeId,department,status,"xlsx");
                 }
 			})
 			
@@ -631,20 +583,18 @@
 				var type = $(this).val();
                 
                 if("excel" == type){
-                	exportData(null,"","","","","","","","xlsx");
+                	exportData("","","","","","","xlsx");
                 }
 			})
 			
-			function  exportData(id,sDate,eDate,employeeName,employeeId,department,status,shift,flag) {
+			function  exportData(sDate,eDate,employeeName,employeeId,department,status,flag) {
                 var data = {
-					"id":id,
             		"sDate" : sDate,
                		"eDate" : eDate,
                		"employeeName" : employeeName,
                		"employeeId":employeeId,
                		"department":department,
                		"status":status,
-               		"shift":shift,
 	           		"flag":flag
                 }; 
     	            

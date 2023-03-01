@@ -52,15 +52,15 @@ private Employee cosecExcelRowToEmployee(Row currentRow) {
 			if (null == employeeObj) {
 				break;
 			}
+//			else if (cellIndex == NumberConstants.ZERO) {
+//				setUniqueId(employeeObj, currentCell);
+//			}
 			else if (cellIndex == NumberConstants.ZERO) {
-				setUniqueId(employeeObj, currentCell);
-			}
-			else if (cellIndex == NumberConstants.ONE) {
 				setEmpId(employeeObj, currentCell);
-			} else if (cellIndex == NumberConstants.TWO) {
+			} else if (cellIndex == NumberConstants.ONE) {
 				employeeObj.setName(currentCell.getStringCellValue().trim());
 			}
-			else if (cellIndex == NumberConstants.THREE) {
+			else if (cellIndex == NumberConstants.TWO) {
 				employeeObj.setDepartment(currentCell.getStringCellValue().trim());
 			}
 
