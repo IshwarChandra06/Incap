@@ -23,16 +23,25 @@ public interface TransactionRepository extends DataTablesRepository<Transaction,
 
 	Transaction findByEmpIdAndPunchDate(String empId, Date punchDate);
 
-	@Query("select t from com.eikona.mata.entity.Transaction t where t.isSync=false and t.empId is not null and t.accessType is not null and t.punchDateStr=:date")
-	List<Transaction> findAllByIsSyncFalseAndDateCustom(String date);
+	@Query("select t from com.eikona.mata.entity.Transaction t where t.empId is not null and t.punchDateStr=:date order by t.empId,t.punchDate")
+	List<Transaction> findAllByDateCustom(String date);
+	
+	@Query("select t from com.eikona.mata.entity.Transaction t where t.empId is not null and t.department = :department "
+			+ "and t.punchDate >= :startDate and t.punchDate <= :endDate order by t.empId,t.punchDate")
+	List<Transaction> findAllByDateRangeCustom(String department, Date startDate, Date endDate);
 
 	@Query("select new com.eikona.mata.dto.TransactionDto(t.empId, min(t.punchDate), max(t.punchDate)) from com.eikona.mata.entity.Transaction t where t.empId in :employeeIdList "
-			+ "and t.punchDate >= :startDate and t.punchDate <= :endDate group by t.empId")
+			+ "and t.punchDate >= :startDate and t.punchDate <= :endDate and t.device.cosecEnabled=true group by t.empId")
 	List<TransactionDto> findMinAndMaxEventByDateCustom(List<String> employeeIdList, Date startDate, Date endDate);
+	
 
 	@Query("select new com.eikona.mata.dto.TransactionDto(t.empId, min(t.punchDate), max(t.punchDate)) from com.eikona.mata.entity.Transaction t where t.department = :department "
 			+ "and t.punchDate >= :startDate and t.punchDate <= :endDate group by t.empId")
 	List<TransactionDto> findMinAndMaxEventByDateAndDepartmentCustom(String department, Date startDate, Date endDate);
+
+	@Query("select count(t.id) from com.eikona.mata.entity.Transaction t where t.empId =:empId "
+			+ "and t.punchDate >= :startDate and t.punchDate <= :endDate")
+	Long findAllByEmpIdAndDateRangeCustom(String empId, Date startDate, Date endDate);
 	
 //	@Query("select new com.eikona.mata.dto.TransactionDto(t.empId, min(t.punchDate), max(t.punchDate)) from com.eikona.mata.entity.Transaction t where "
 //			+ "t.punchDate >= :startDate and t.punchDate <= :endDate group by t.empId")

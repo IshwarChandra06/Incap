@@ -14,7 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 
 @Entity(name="user")
-public class User implements Serializable{
+public class User extends Auditable<String> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
@@ -37,6 +37,14 @@ public class User implements Serializable{
 	private String phone;
 	
 	private boolean isDeleted;
+	
+	@ManyToOne
+	@JoinColumn(name="organization_id")
+	private Organization organization;
+	
+	@ManyToOne
+	@JoinColumn(name="created_org_id")
+	private Organization createByOrganization;
 	
 	public Long getId() {
 		return id;
@@ -74,11 +82,24 @@ public class User implements Serializable{
 	public void setDeleted(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+	public Organization getOrganization() {
+		return organization;
+	}
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
+	}
 	public String getPhone() {
 		return phone;
 	}
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+	
+	public Organization getCreateByOrganization() {
+		return createByOrganization;
+	}
+	public void setCreateByOrganization(Organization createByOrganization) {
+		this.createByOrganization = createByOrganization;
 	}
 	
 	public User(String userName, String password, boolean active, Role role, boolean isDeleted) {

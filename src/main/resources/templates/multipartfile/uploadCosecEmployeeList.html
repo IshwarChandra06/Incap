@@ -28,8 +28,10 @@
 								<li class="breadcrumb-item">Personnel</li>
 								<li class="breadcrumb-item active"> Upload Employee Excel File</li>
 							</ul>
-				</div>
-
+				           </div>
+                         <div class="col-auto float-right ml-auto">
+							 <a th:href="@{/excel-template-download}" class="btn add-btn"><i class="las la-download"></i>Excel Employee Import Template</a>
+						</div>
 					</div>
 				</div>
 			<div class="row">
@@ -38,7 +40,7 @@
 							<div class="card-body">
 				
 					<form method="POST" enctype="multipart/form-data"
-						th:action="@{/upload/cosec/employee-list/excel}" id="fileUploadForm">
+						th:action="@{/upload/employee-list/excel}" id="fileUploadForm">
 						<div class="form-group">
 							    <label class="control-label" for="uploadfile"><b>Upload File:</b></label> 
 								<input type="file" class="form-control" id="uploadfile"

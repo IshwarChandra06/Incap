@@ -38,9 +38,6 @@
 				<div class="row">
 					<div class="col-md-6">
 						<div class="card">
-							<!-- 								<div class="card-header"> -->
-							<!-- 									<h4 class="card-title mb-0">Basic Form</h4> -->
-							<!-- 								</div> -->
 							<div class="card-body">
 								<form action="#" th:action="@{/user/add}" th:object="${user}"
 									method="POST">
@@ -57,7 +54,7 @@
 										</select>
 									</div>
 									<div class="form-group">
-										<label><b>Name:</b></label> <input type="text"
+										<label><b>User Name:</b></label> <input type="text"
 											th:field="*{userName}" placeholder="Enter User Name"
 											class="form-control">
 									</div>

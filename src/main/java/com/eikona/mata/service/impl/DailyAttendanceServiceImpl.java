@@ -140,7 +140,7 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 						dailyReport.setDepartment(transaction.getDepartment());
 						dailyReport.setMissedOutPunch(true);
 						dailyReport.setEmpInTime(transaction.getPunchTimeStr());
-						dailyReport.setEmpInLocation(transaction.getDeviceName());
+						dailyReport.setEmpInLocation(transaction.getDevice().getName());
 						dailyReport.setAttendanceStatus("Present");
 						if(Integer.parseInt(dailyReport.getEmpInTime().split(":")[0])>=17) 
 							dailyReport.setShift("N");
@@ -154,7 +154,7 @@ public class DailyAttendanceServiceImpl implements DailyAttendanceService{
 							} else {
 								
 								dailyReport.setEmpOutTime(transaction.getPunchTimeStr());
-								dailyReport.setEmpOutLocation(transaction.getDeviceName());
+								dailyReport.setEmpOutLocation(transaction.getDevice().getName());
 		
 								dailyReport.setMissedOutPunch(false);
 		

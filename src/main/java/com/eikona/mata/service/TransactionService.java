@@ -6,8 +6,8 @@ import com.eikona.mata.entity.Transaction;
 public interface TransactionService {
 
 
-	PaginationDto<Transaction> searchByField(String employee, Long id, String sDate, String eDate, String employeeId,
-			String employeeName, String employeeType, String device, String uId, int pageno, String sortField,
-			String sortDir);
+	PaginationDto<Transaction> searchByField(String sDate, String eDate, String employeeId, String employeeName,
+			String department, String device, String uId, String designation, String area, String emp, String permissionStatus, String deviceType, int pageno,
+			String sortField, String sortDir);
 
 }

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import com.eikona.mata.constants.ApplicationConstants;
 import com.eikona.mata.constants.DailyAttendanceConstants;
+import com.eikona.mata.constants.DeviceConstants;
 import com.eikona.mata.constants.EmployeeConstants;
 import com.eikona.mata.constants.HeaderConstants;
 import com.eikona.mata.constants.NumberConstants;
@@ -42,16 +43,16 @@ public class ExportEventReport {
 	@Autowired
 	private TransactionRepository transactionRepository;
 
-	public void fileExportBySearchValue(HttpServletResponse response, String employee, Long id, String sDate,
-			String eDate, String employeeId, String employeeName, String department, String device, String uId,
-			String flag) throws Exception {
-       List<Transaction> transList = getListOfEvent(employee, id,sDate,eDate, employeeId, employeeName, department,device,uId);
+	public void fileExportBySearchValue(HttpServletResponse response, String sDate, String eDate, String employeeId,
+			String employeeName, String department, String device, String uId, String designation, String area,
+			String emp, String deviceType,String permissionStatus) throws Exception {
+       List<Transaction> transList = getListOfEvent(sDate,eDate, employeeId, employeeName, department,device,uId,designation,area,emp,permissionStatus,deviceType);
 		
 		excelGenerator(response, transList);
 	}
 
-	private List<Transaction> getListOfEvent(String employee, Long id, String sDate, String eDate, String employeeId,
-			String employeeName, String department, String device, String uId) {
+	private List<Transaction> getListOfEvent(String sDate, String eDate, String employeeId,
+			String employeeName, String department, String device, String uId, String designation, String area, String employee, String permissionStatus, String deviceType) {
 		Date startDate = null;
 		Date endDate = null;
 		if (!sDate.isEmpty() && !eDate.isEmpty()) {
@@ -65,24 +66,28 @@ public class ExportEventReport {
 				e.printStackTrace();
 			}
 		}
-		Specification<Transaction> allSpec = null;
-		if(TransactionConstants.ONLY_EMPLOYEE.equalsIgnoreCase(employee)) {
-			allSpec = generalSpecification.isNotNullSpecification(TransactionConstants.EMP_ID);
+		Specification<Transaction> empSpec = null;
+		if("Unregistered".equalsIgnoreCase(employee)) {
+			empSpec = generalSpecification.isNotNullSpecification("empId");
+		}else if("Registered".equalsIgnoreCase(employee)) {
+			empSpec = generalSpecification.isNullSpecification("empId");
 		}else {
-			allSpec = generalSpecification.isNotNullSpecification(ApplicationConstants.DELIMITER_EMPTY);
+			empSpec = generalSpecification.allSpecification();
 		}
 		
-		Specification<Transaction> idSpec = generalSpecification.longSpecification(id, ApplicationConstants.ID);
-		Specification<Transaction> dateSpec = generalSpecification.dateSpecification(startDate, endDate,
-				TransactionConstants.PUNCH_DATE);
+		Specification<Transaction> dateSpec = generalSpecification.dateSpecification(startDate, endDate,TransactionConstants.PUNCH_DATE);
 		Specification<Transaction> empIdSpec = generalSpecification.stringSpecification(employeeId, TransactionConstants.EMP_ID);
 		Specification<Transaction> empNameSpec = generalSpecification.stringSpecification(employeeName, ApplicationConstants.NAME);
 		Specification<Transaction> deptSpec = generalSpecification.stringSpecification(department, DailyAttendanceConstants.DEPARTMENT);
-		Specification<Transaction> devSpec = generalSpecification.stringSpecification(device, TransactionConstants.DEVICE_NAME);
+		Specification<Transaction> designationSpec = generalSpecification.stringSpecification(designation, DailyAttendanceConstants.DESIGNATION);
+		Specification<Transaction> areaSpec = generalSpecification.stringSpecification(area, "area");
+		Specification<Transaction> devSpec = generalSpecification.foreignKeyStringSpecification(device, TransactionConstants.DEVICE, ApplicationConstants.NAME);
+		Specification<Transaction> devTypeSpec = generalSpecification.foreignKeyStringSpecification(deviceType, TransactionConstants.DEVICE, DeviceConstants.MODEL);
 		Specification<Transaction> uIdSpec = generalSpecification.stringSpecification(uId, "uniqueId");
+		Specification<Transaction> permissionStatusSpec = generalSpecification.stringSpecification(permissionStatus, "permissionStatus");
 		
-		List<Transaction> transList =transactionRepository.findAll(idSpec.and(dateSpec).and(empIdSpec).and(empNameSpec).and(deptSpec).and(uIdSpec)
-				.and(devSpec).and(allSpec));
+		List<Transaction> transList =transactionRepository.findAll(dateSpec.and(empIdSpec).and(empNameSpec).and(deptSpec).and(uIdSpec).and(devTypeSpec)
+				.and(devSpec).and(empSpec).and(areaSpec).and(designationSpec).and(permissionStatusSpec));
 		return transList;
 	}
 	private void excelGenerator(HttpServletResponse response, List<Transaction> transList) throws Exception {
@@ -127,15 +132,15 @@ public class ExportEventReport {
 			int columnCount = NumberConstants.ZERO;
 
 			Cell cell = row.createCell(columnCount++);
-			cell.setCellValue(transaction.getId());
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
 			cell.setCellValue(transaction.getPunchDateStr());
 			cell.setCellStyle(cellStyle);
 			
 			cell = row.createCell(columnCount++);
 			cell.setCellValue(transaction.getPunchTimeStr());
+			cell.setCellStyle(cellStyle);
+			
+			cell = row.createCell(columnCount++);
+			cell.setCellValue(transaction.getEmpId());
 			cell.setCellStyle(cellStyle);
 			
 			cell = row.createCell(columnCount++);
@@ -147,15 +152,19 @@ public class ExportEventReport {
 			cell.setCellStyle(cellStyle);
 			
 			cell = row.createCell(columnCount++);
-			cell.setCellValue(transaction.getEmpId());
-			cell.setCellStyle(cellStyle);
-			
-			cell = row.createCell(columnCount++);
 			cell.setCellValue(transaction.getDepartment());
 			cell.setCellStyle(cellStyle);
 			
 			cell = row.createCell(columnCount++);
-			cell.setCellValue(transaction.getDeviceName());
+			cell.setCellValue(transaction.getDesignation());
+			cell.setCellStyle(cellStyle);
+			
+			cell = row.createCell(columnCount++);
+			cell.setCellValue(transaction.getArea());
+			cell.setCellStyle(cellStyle);
+			
+			cell = row.createCell(columnCount++);
+			cell.setCellValue(transaction.getDevice().getName());
 			cell.setCellStyle(cellStyle);
 		}
 		
@@ -173,16 +182,17 @@ public class ExportEventReport {
 	
 	private void setHeaderForExcel(Row row, CellStyle cellStyle) {
 		int columnCount = NumberConstants.ZERO;
-		Cell cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.ID);
-		cell.setCellStyle(cellStyle);
 		
-		cell = row.createCell(columnCount++);
+		Cell cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.DATE);
 		cell.setCellStyle(cellStyle);
 		
 		cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.TIME);
+		cell.setCellStyle(cellStyle);
+		
+		cell = row.createCell(columnCount++);
+		cell.setCellValue(HeaderConstants.EMPLOYEE_ID);
 		cell.setCellStyle(cellStyle);
 
 		cell = row.createCell(columnCount++);
@@ -192,13 +202,17 @@ public class ExportEventReport {
 		cell = row.createCell(columnCount++);
 		cell.setCellValue("Unique Id");
 		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.EMPLOYEE_ID);
-		cell.setCellStyle(cellStyle);
 		
 		cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.DEPARTMENT);
+		cell.setCellStyle(cellStyle);
+		
+		cell = row.createCell(columnCount++);
+		cell.setCellValue(HeaderConstants.DESIGNATION);
+		cell.setCellStyle(cellStyle);
+		
+		cell = row.createCell(columnCount++);
+		cell.setCellValue(HeaderConstants.AREA);
 		cell.setCellStyle(cellStyle);
 		
 		cell = row.createCell(columnCount++);
@@ -206,4 +220,5 @@ public class ExportEventReport {
 		cell.setCellStyle(cellStyle);
 		
 	}
+
 }

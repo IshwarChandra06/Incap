@@ -10,12 +10,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity(name="role")
-public class Role implements Serializable{
+public class Role extends Auditable<String> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
@@ -30,6 +32,11 @@ public class Role implements Serializable{
     @Column(name = "name")
     private String name;
     
+    @ManyToOne
+	@JoinColumn(name="organization_id",nullable = true)
+	private Organization organization;
+    
+
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Privilege> privileges;
     
@@ -99,6 +106,14 @@ public class Role implements Serializable{
 		
 	}
 
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
+	}
+    
 	
 
 }

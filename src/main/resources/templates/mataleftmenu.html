@@ -8,14 +8,30 @@
                 <div class="sidebar-inner slimscroll">
 					<div id="sidebar-menu" class="sidebar-menu">
 						<ul>
+							<li class="menu-title" sec:authorize="hasAuthority('organization_view')"> 
+								<span>Master</span>
+							</li>
+							<li id="organization_menu" sec:authorize="hasAuthority('organization_view')">
+								<a th:href="@{/organization}"><i class="la la-city"></i> <span> Organization</span></a>
+							</li>
+							<li id="department_menu" sec:authorize="hasAuthority('department_view')">
+								<a th:href="@{/department}"><i class="la la-building"></i><span>Department</span></a>
+							</li>
+              				<li id="designation_menu" sec:authorize="hasAuthority('designation_view')">
+              					<a th:href="@{/designation}"><i class="la la-user-shield"></i><span>Designation</span></a>
+              				</li>
 							<li class="menu-title" sec:authorize="hasAuthority('employee_view')"> 
 								<span>Personnel</span>
 							</li>
 							<li id="employee_menu" sec:authorize="hasAuthority('employee_view')">
 								<a class="" th:href="@{/employee}"><i class="la la-user"></i><span>Employee</span></a>
 							</li>
+							
 							<li class="menu-title" sec:authorize="hasAuthority('device_view')"> 
 								<span>Authorization</span>
+							</li>
+							<li id="area_menu" sec:authorize="hasAuthority('area_view')">
+								<a class="" th:href="@{/area}"><i class="las la-landmark"></i><span>Area</span></a>
 							</li>
 							<li id="device_menu" sec:authorize="hasAuthority('device_view')">
 								<a class="" th:href="@{/device}"><i class="la la-video"></i><span>Device</span></a>
@@ -27,10 +43,18 @@
 								<span>Reports</span>
 							</li>
 							    <li id="even-report_menu" sec:authorize="hasAuthority('transaction_view')"><a href="/transaction"><i class="las la-file-upload"></i><span> Event Report</span></a></li>
+							    <li id="perimeter-report_menu" sec:authorize="hasAuthority('transaction_view')"><a href="/perimeter-event"><i class="las la-file-excel"></i><span> Perimeter Report</span></a></li>
+							     <li id="deadline-report_menu" sec:authorize="hasAuthority('transaction_view')"><a href="/deadline-event"><i class="las la-hourglass-end"></i><span> Deadline Report</span></a></li>
 <!-- 							    <li id="unenrolled_menu" sec:authorize="hasAuthority('transaction_view')"><a class="" th:href="@{/unenrolled-employee}"><i class="las la-file-signature"></i><span>Unenrolled Logs</span></a></li> -->
 <!-- 								<li id="unregistered_menu" sec:authorize="hasAuthority('transaction_view')"><a class="" th:href="@{/unregistered-logs}"><i class="las la-file-excel"></i><span>Unregistered Logs</span></a> -->
 <!-- 								<li id="daily-report_menu" sec:authorize="hasAuthority('dailyreport_view')"><a href="/daily-reports"><i class="las la-file-alt"></i><span> Daily Report</span> </a></li> -->
 <!-- 								<li id="monthly_menu" sec:authorize="hasAuthority('monthlyattendance_view')"><a href="/monthly-attendance/report"><i class="las la-calendar"></i><span> Monthly Attendance</span> </a></li> -->
+							
+							<li class="menu-title" sec:authorize="hasAuthority('action_details_view')"> 
+								<span>Logs</span>
+							</li>
+								<li id="action_details_menu" sec:authorize="hasAuthority('action_details_view')"><a class="" th:href="@{/action-details}"><i class="lab la-buffer"></i><span>Exception</span></a>
+							</li>
 							
 							<li class="menu-title" sec:authorize="hasAuthority('user_view')"> 
 								<span>Administration</span>

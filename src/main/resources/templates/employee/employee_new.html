@@ -38,12 +38,14 @@
 						<div class="card">
 							<div class="card-body">
 								<form th:action="@{/employee/add}" enctype="multipart/form-data" th:object="${employee}" method="POST">
-									<input type="hidden" th:field="*{id}" placeholder="Area Id" class="form-control mb-4 col-4">
+									<input type="hidden" th:field="*{id}" class="form-control mb-4 col-4">
 									<input type="hidden" th:value="${title}" name="title" class="form-control mb-4 col-4">
-									<div class="form-group">
-										<label><b>Name:</b></label> 
-										<input type="text" th:field="*{name}" placeholder="Enter Employee Name" maxlength="50"
-											class="form-control">
+									<div class="form-group" style="display:none">
+										<label><b>Organization:</b></label> <select name="organization"
+											th:field="*{organization}" class="form-control">
+											<option th:each="organization : ${listOrganization}"
+												th:value="${organization.id}" th:text="${organization.name}">
+										</select>
 									</div>
 									<div class="form-group">
 										<label><b>Employee Id:<font color="red">*</font></b></label> 
@@ -52,17 +54,37 @@
 											class="form-control">
 									</div>
 									<div class="form-group">
-										<label><b>Department:</b></label> 
-										<input type="text" th:field="*{department}" placeholder="Enter Department Name" maxlength="50"
+										<label><b>Unique Id:</b></label> 
+										<p th:if="${#fields.hasErrors('uniqueId')}" th:errors="*{uniqueId}" class="alert alert-danger"></p> 
+										<input type="text" th:field="*{uniqueId}" placeholder="Enter Unique Id" maxlength="50"
 											class="form-control">
 									</div>
 									<div class="form-group">
-										<label><b>Shift:</b></label> 
-										<select th:field="*{shift}" class="form-control">
-										  <option value="">Select Shift</option>
-											<option th:each="shift : ${listShift}"
-												th:value="${shift.id}" th:text="${shift.name}">
+										<label><b>Name:</b></label> 
+										<input type="text" th:field="*{name}" placeholder="Enter Employee Name" maxlength="50"
+											class="form-control">
+									</div>
+									<div class="form-group">
+										<label><b>Department:</b></label> 
+										<select name="worker"
+											th:field="*{department}" class="form-control">
+											<option value="">Select Department</option>
+											<option th:each="department : ${listDepartment}"
+												th:value="${department.id}" th:text="${department.name}">
 										</select>
+									</div>
+									<div class="form-group">
+										<label><b>Designation:</b></label> 
+										<select th:field="*{designation}" class="form-control">
+											<option value="">Select Designation</option>
+											<option th:each="designation : ${listDesignation}"
+												th:value="${designation.id}" th:text="${designation.name}">
+										</select>
+									</div>
+									<div class="form-group">
+										<label><b>Upload Employee Image:</b></label> 
+										<input type="file" name="files" id="file" placeholder="choose file"
+											class="form-control"onchange="validateSize(this); fileValidation()" accept=".jpg" >
 									</div>
 									<div class="text-right">
 										<button type="submit" class="btn btn-primary">Submit</button>
@@ -78,5 +100,53 @@
 	</div>
 	<div th:replace="matafooter :: footer"></div>
 	<script src="/assets/js/app.js"></script> 
+	<script>
+	
+		$(document).ready(function(){
+    	function selectAll() {
+    		console.log(" inside select ");
+    	    // this refers to the clicked checkbox
+    	    // find all checkboxes inside the checkbox' form
+    	    var elements = document.getElementsById('select_all');
+    	    console.log(elements);
+    	    // iterate and change status
+    	    for (var i = elements.length; i--; ) {
+    	        if (elements[i].type == 'checkbox') {
+    	            elements[i].checked = this.checked;
+    	        }
+    	    }
+    	}
+    	
+    	
+		 });
+		function validateSize(input) {
+  		  const fileSize = input.files[0].size;
+  		  if(fileSize < 10240){
+  			 alert('File size under 10 KB');
+  		  }
+  		  if (fileSize > 716800) {
+  		    alert('File size exceeds 700 KB');
+  		    // $(file).val(''); //for clearing with Jquery
+  		  } else {
+  		    // Proceed further
+  		  }
+  		}
+		function fileValidation(){
+		var fileInput = 
+            document.getElementById('file');
+          
+        var filePath = fileInput.value;
+      
+        // Allowing file type
+        var allowedExtensions = /(\.jpg)$/i;
+
+          
+        if (!allowedExtensions.exec(filePath)) {
+            alert('File type is not in jpg format');
+            fileInput.value = '';
+            return false;
+        } 
+		}
+	</script>
 </body>
 </html>

@@ -81,21 +81,12 @@
 						<div class="col-sm-6 col-md-3">  
 						<div class="form-group">
 										<label><b>Department:</b></label> 
-										<select class="form-control" id="department">
+										<select name="department"
+											id="department" class="form-control">
 											<option value="">Select Department</option>
-											<option value="HR">HR</option>
-											<option value="IT">IT</option>
-											<option value="FINANCE">FINANCE</option>
-											<option value="CANTEEN">CANTEEN</option>
-											<option value="DOCUMENTATION">DOCUMENTATION</option>
-											<option value="PM">PM</option>
-											<option value="SAFETY">SAFETY</option>
-											<option value="SCM">SCM</option>
-											<option value="Supplier Development">Supplier Development</option>
-											<option value="Production">Production</option>
-											<option value="PMD,IT & Admin">PMD,IT & Admin</option>
-											<option value="MED">MED</option>
-											</select>
+											<option th:each="department : ${listDepartment}"
+												th:value="${department.name}" th:text="${department.name}">
+										</select>
 									</div>
 						</div>
 						<div class="col-sm-6 col-md-2">  

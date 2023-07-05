@@ -2,6 +2,7 @@ package com.eikona.mata.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,10 +22,17 @@ import org.springframework.stereotype.Component;
 import com.eikona.mata.constants.ApplicationConstants;
 import com.eikona.mata.constants.MessageConstants;
 import com.eikona.mata.constants.NumberConstants;
+import com.eikona.mata.entity.Department;
+import com.eikona.mata.entity.Designation;
 import com.eikona.mata.entity.Employee;
+import com.eikona.mata.entity.Organization;
 import com.eikona.mata.entity.Shift;
+import com.eikona.mata.entity.User;
+import com.eikona.mata.repository.DepartmentRepository;
+import com.eikona.mata.repository.DesignationRepository;
 import com.eikona.mata.repository.EmployeeRepository;
 import com.eikona.mata.repository.ShiftRepository;
+import com.eikona.mata.repository.UserRepository;
 
 @Component
 public class ExcelEmployeeImport {
@@ -36,40 +44,104 @@ public class ExcelEmployeeImport {
 	@Autowired
 	private ShiftRepository shiftRepository;
 	
+	@Autowired
+	private DepartmentRepository departmentrepository;
+	
+	@Autowired
+	private DesignationRepository designationRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
+	
 
 	
 	
-private Employee cosecExcelRowToEmployee(Row currentRow) {
+private Employee cosecExcelRowToEmployee(Row currentRow,Map<String, Department> deptMap,Map<String, Designation> desigMap, Organization org) {
 		
 		Employee employeeObj = null;
 		
 		Iterator<Cell> cellsInRow = currentRow.iterator();
 		int cellIndex = NumberConstants.ZERO;
 		employeeObj = new Employee();
+
 		while (cellsInRow.hasNext()) {
 			Cell currentCell = cellsInRow.next();
-
+			cellIndex = currentCell.getColumnIndex();
 			if (null == employeeObj) {
 				break;
 			}
-//			else if (cellIndex == NumberConstants.ZERO) {
-//				setUniqueId(employeeObj, currentCell);
-//			}
 			else if (cellIndex == NumberConstants.ZERO) {
-				setEmpId(employeeObj, currentCell);
+				String str=setString(employeeObj, currentCell);
+				employeeObj.setEmpId(str);
+				employeeObj.setOrganization(org);
 			} else if (cellIndex == NumberConstants.ONE) {
+				String str=setString(employeeObj, currentCell);
+				employeeObj.setUniqueId(str);
+			}else if (cellIndex == NumberConstants.TWO) {
 				employeeObj.setName(currentCell.getStringCellValue().trim());
 			}
-			else if (cellIndex == NumberConstants.TWO) {
-				employeeObj.setDepartment(currentCell.getStringCellValue().trim());
+			else if (cellIndex == NumberConstants.THREE) {
+				setDepartment(deptMap,employeeObj,currentCell);
+			}
+			else if (cellIndex == NumberConstants.FOUR) {
+				setDesignation(desigMap, employeeObj, currentCell);
 			}
 
-			cellIndex++;
 		}
 		return employeeObj;
 		
 	}
-	public List<Employee> parseCosecExcelFileEmployeeList(InputStream inputStream) throws InvalidFormatException {
+public Map<String, Department> getDepartment(){
+	List<Department> departmentList = departmentrepository.findAllByIsDeletedFalse();
+	Map<String, Department> deptMap = new HashMap<String, Department>();
+	
+	for(Department department: departmentList ) {
+		deptMap.put(department.getName(), department);
+	}
+	return deptMap;
+}
+
+public Map<String, Designation> getDesignation(){
+	List<Designation> desigList = designationRepository.findAllByIsDeletedFalse();
+	Map<String, Designation> desigMap = new HashMap<String, Designation>();
+	
+	for(Designation desig: desigList ) {
+		desigMap.put(desig.getName(), desig);
+	}
+	return desigMap;
+}
+private void setDepartment(Map<String, Department> deptMap, Employee employeeObj,Cell currentCell) {
+	String str = currentCell.getStringCellValue().trim();
+
+	if (null != str && !str.isEmpty()) {
+		
+		Department department = deptMap.get(str);
+		if (null == department) {
+			department = new Department();
+			department.setName(str);
+			departmentrepository.save(department);
+			deptMap.put(department.getName(), department);
+		}
+		employeeObj.setDepartment(department);
+	}
+}
+
+private void setDesignation(Map<String, Designation> desigMap, Employee employeeObj,Cell currentCell) {
+	String str = currentCell.getStringCellValue().trim();
+
+	if (null != str && !str.isEmpty()) {
+		
+		Designation designation = desigMap.get(str);
+		if (null == designation) {
+			designation = new Designation();
+			designation.setName(str);
+			designationRepository.save(designation);
+			desigMap.put(designation.getName(), designation);
+		}
+		employeeObj.setDesignation(designation);
+	}
+}
+	public List<Employee> parseCosecExcelFileEmployeeList(InputStream inputStream, Principal principal) throws InvalidFormatException {
 		List<Employee> employeeList = new ArrayList<Employee>();
 		try {
 
@@ -92,8 +164,11 @@ private Employee cosecExcelRowToEmployee(Row currentRow) {
 				}
 
 				rowNumber++;
-				
-				Employee employee=cosecExcelRowToEmployee(currentRow);
+				Map<String, Department> deptMap = getDepartment();
+				Map<String, Designation> desigMap = getDesignation();
+				User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+				Organization org= user.getOrganization();
+				Employee employee=cosecExcelRowToEmployee(currentRow,deptMap,desigMap,org);
 				
 				boolean isContains=empIdList.contains(employee.getEmpId());
 				
@@ -122,24 +197,26 @@ private Employee cosecExcelRowToEmployee(Row currentRow) {
 	}
 
 	@SuppressWarnings(ApplicationConstants.DEPRECATION)
-	private void setEmpId(Employee employeeObj, Cell currentCell) {
+	private String setString(Employee employeeObj, Cell currentCell) {
+		String str="";
 		currentCell.setCellType(CellType.STRING);
 		if (currentCell.getCellType() == CellType.NUMERIC) {
-			employeeObj.setEmpId(String.valueOf(currentCell.getNumericCellValue()).trim());
+			str= String.valueOf(currentCell.getNumericCellValue()).trim();
 		} else if (currentCell.getCellType() == CellType.STRING) {
-			employeeObj.setEmpId(currentCell.getStringCellValue().trim());
+			str= currentCell.getStringCellValue().trim();
 		}
+		return str;
 	}
 	
-	@SuppressWarnings(ApplicationConstants.DEPRECATION)
-	private void setUniqueId(Employee employeeObj, Cell currentCell) {
-		currentCell.setCellType(CellType.STRING);
-		if (currentCell.getCellType() == CellType.NUMERIC) {
-			employeeObj.setUniqueId(String.valueOf(currentCell.getNumericCellValue()).trim());
-		} else if (currentCell.getCellType() == CellType.STRING) {
-			employeeObj.setUniqueId(currentCell.getStringCellValue().trim());
-		}
-	}
+//	@SuppressWarnings(ApplicationConstants.DEPRECATION)
+//	private void setUniqueId(Employee employeeObj, Cell currentCell) {
+//		currentCell.setCellType(CellType.STRING);
+//		if (currentCell.getCellType() == CellType.NUMERIC) {
+//			employeeObj.setUniqueId(String.valueOf(currentCell.getNumericCellValue()).trim());
+//		} else if (currentCell.getCellType() == CellType.STRING) {
+//			employeeObj.setUniqueId(currentCell.getStringCellValue().trim());
+//		}
+//	}
 	public List<Employee> parseEmployeeShiftListExcelFile(InputStream inputStream)  throws InvalidFormatException {
 		List<Employee> employeeList = new ArrayList<Employee>();
 		try {
@@ -207,7 +284,8 @@ private Employee cosecExcelRowToEmployee(Row currentRow) {
 			}
 
 			else if (cellIndex == NumberConstants.ZERO) {
-				setEmpId(employeeObj, currentCell);
+				String str=setString(employeeObj, currentCell);
+				employeeObj.setEmpId(str);
 			} else if (cellIndex == NumberConstants.ONE) {
 				setShift(shiftMap, employeeObj, currentCell);
 			}
@@ -242,5 +320,66 @@ private Map<String, Shift> getShiftByName(){
 		shiftMap.put(shift.getName(), shift);
 	}
 	return shiftMap;
+}
+
+public void parseEmployeeListForDelete(InputStream inputStream) {
+
+	try {
+
+		Workbook workbook = new XSSFWorkbook(inputStream);
+		Sheet sheet = workbook.getSheetAt(NumberConstants.ZERO);
+
+		Iterator<Row> rows = sheet.iterator();
+
+		int rowNumber = NumberConstants.ZERO;
+		while (rows.hasNext()) {
+			Row currentRow = rows.next();
+
+			// skip header
+			if (rowNumber == NumberConstants.ZERO) {
+				rowNumber++;
+				continue;
+			}
+
+			rowNumber++;
+
+			Iterator<Cell> cellsInRow = currentRow.iterator();
+			int cellIndex = NumberConstants.ZERO;
+
+			while (cellsInRow.hasNext()) {
+				Cell currentCell = cellsInRow.next();
+				cellIndex = currentCell.getColumnIndex();
+
+				 if (cellIndex == NumberConstants.ZERO) {
+					String value = getStringValue(currentCell);
+					Employee employee = employeeRepository.findByEmpIdAndIsDeletedFalse(value.trim());
+					if (null!=employee) {
+						employee.setDeleted(true);
+						employeeRepository.save(employee);
+					}
+				}
+
+		}
+
+
+		workbook.close();
+
+	}
+	}catch (IOException e) {
+		throw new RuntimeException(MessageConstants.FAILED_MESSAGE + e.getMessage());
+	}
+
+}
+
+@SuppressWarnings(ApplicationConstants.DEPRECATION)
+private String getStringValue(Cell currentCell) {
+	currentCell.setCellType(CellType.STRING);
+	String value = "";
+	if (currentCell.getCellType() == CellType.NUMERIC) {
+		value = String.valueOf(currentCell.getNumericCellValue());
+	} else if (currentCell.getCellType() == CellType.STRING) {
+		value = currentCell.getStringCellValue();
+	}
+	return value;
 }
 }

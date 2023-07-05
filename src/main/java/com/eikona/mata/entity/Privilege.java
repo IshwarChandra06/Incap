@@ -13,7 +13,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity(name="privilege")
 
-public class Privilege  implements Serializable{
+public class Privilege extends Auditable<String> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 

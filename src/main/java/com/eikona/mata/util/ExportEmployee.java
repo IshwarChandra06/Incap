@@ -24,6 +24,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import com.eikona.mata.constants.ApplicationConstants;
+import com.eikona.mata.constants.AreaConstants;
 import com.eikona.mata.constants.EmployeeConstants;
 import com.eikona.mata.constants.HeaderConstants;
 import com.eikona.mata.constants.NumberConstants;
@@ -38,23 +39,23 @@ public class ExportEmployee {
 	@Autowired
 	private EmployeeRepository employeeRepository;
 
-	public void fileExportBySearchValue(HttpServletResponse response, Long id, String name, String empId,String department,
-			 String uId, String flag) throws ParseException, IOException {
+	public void fileExportBySearchValue(HttpServletResponse response,String name, String empId,String department,String designation, String uniqueId, String flag, String orgName) throws ParseException, IOException {
 		
-		List<Employee> employeeList = getListOfEmployee(id, name, empId,department,uId);
+		List<Employee> employeeList = getListOfEmployee(name, empId,department,designation,uniqueId,orgName);
 		
 		excelGenerator(response, employeeList);
 		
 	}
 
-	private List<Employee> getListOfEmployee(Long id, String name, String empId,String department, String uId) {
-		Specification<Employee> idSpec = generalSpecification.longSpecification(id, ApplicationConstants.ID);
+	private List<Employee> getListOfEmployee(String name, String empId,String department, String designation, String uniqueId,String orgName) {
 		Specification<Employee> employeeNameSpec = generalSpecification.stringSpecification(name,EmployeeConstants.NAME);
 		Specification<Employee> employeeIdSpec = generalSpecification.stringSpecification(empId,EmployeeConstants.EMPID);
-		Specification<Employee> departmentSpec = generalSpecification.stringSpecification(department,EmployeeConstants.DEPARTMENT);
-		Specification<Employee> uIdSpec = generalSpecification.stringSpecification(uId,"uniqueId");
-		
-    	List<Employee> employeeList =employeeRepository.findAll(idSpec.and(employeeNameSpec).and(employeeIdSpec).and(departmentSpec).and(uIdSpec));
+		Specification<Employee> departmentSpec = generalSpecification.foreignKeyStringSpecification(department,EmployeeConstants.DEPARTMENT,EmployeeConstants.NAME);
+		Specification<Employee> designationSpec = generalSpecification.foreignKeyStringSpecification(designation,EmployeeConstants.DESIGNATION,EmployeeConstants.NAME);
+		Specification<Employee> orgSpec = generalSpecification.foreignKeyStringSpecification(orgName, AreaConstants.ORGANIZATION,EmployeeConstants.NAME);
+		Specification<Employee> uIdSpec = generalSpecification.stringSpecification(uniqueId,"uniqueId");
+		Specification<Employee> isDeletedFalseSpec = generalSpecification.booleanSpecification(false, "isDeleted");
+    	List<Employee> employeeList =employeeRepository.findAll(employeeNameSpec.and(employeeIdSpec).and(departmentSpec).and(uIdSpec).and(designationSpec).and(isDeletedFalseSpec).and(orgSpec));
 		return employeeList;
 	}
 	
@@ -112,32 +113,31 @@ public class ExportEmployee {
 			int columnCount = NumberConstants.ZERO;
 
 			Cell cell = row.createCell(columnCount++);
-			cell.setCellValue(employee.getId());
-			cell.setCellStyle(cellStyle);
-
-			cell = row.createCell(columnCount++);
 			cell.setCellValue(employee.getName());
 			cell.setCellStyle(cellStyle);
 			
-			cell = row.createCell(columnCount++);
-			cell.setCellValue(employee.getUniqueId());
-			cell.setCellStyle(cellStyle);
-
 			cell = row.createCell(columnCount++);
 			cell.setCellValue(employee.getEmpId());
 			cell.setCellStyle(cellStyle);
 			
 			cell = row.createCell(columnCount++);
-			cell.setCellValue(employee.getDepartment());
+			cell.setCellValue(employee.getUniqueId());
 			cell.setCellStyle(cellStyle);
 			
-//			cell = row.createCell(columnCount++);
-//			if(null!=employee.getShift())
-//			 cell.setCellValue(employee.getShift().getName());
-//			else
-//			 cell.setCellValue(ApplicationConstants.DELIMITER_EMPTY);	
+			cell = row.createCell(columnCount++);
+			if(null!=employee.getDepartment())
+			  cell.setCellValue(employee.getDepartment().getName());
+			else
+			  cell.setCellValue("");
+			cell.setCellStyle(cellStyle);
 			
-//			cell.setCellStyle(cellStyle);
+			cell = row.createCell(columnCount++);
+			if(null!=employee.getDesignation())
+			  cell.setCellValue(employee.getDesignation().getName());
+			else
+			  cell.setCellValue("");
+			cell.setCellStyle(cellStyle);
+			
 
 		}
 	}
@@ -145,11 +145,11 @@ public class ExportEmployee {
 	private void setHeaderForExcel(Row row, CellStyle cellStyle) {
 		int columnCount = NumberConstants.ZERO;
 		Cell cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.ID);
-		cell.setCellStyle(cellStyle);
-
-		cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.NAME);
+		cell.setCellStyle(cellStyle);
+		
+		cell = row.createCell(columnCount++);
+		cell.setCellValue(HeaderConstants.EMPLOYEE_ID);
 		cell.setCellStyle(cellStyle);
 		
 		cell = row.createCell(columnCount++);
@@ -157,17 +157,13 @@ public class ExportEmployee {
 		cell.setCellStyle(cellStyle);
 
 		cell = row.createCell(columnCount++);
-		cell.setCellValue(HeaderConstants.EMPLOYEE_ID);
-		cell.setCellStyle(cellStyle);
-		
-		cell = row.createCell(columnCount++);
 		cell.setCellValue(HeaderConstants.DEPARTMENT);
 		cell.setCellStyle(cellStyle);
 		
-//		cell = row.createCell(columnCount++);
-//		cell.setCellValue(HeaderConstants.SHIFT);
-//		cell.setCellStyle(cellStyle);
-
+		cell = row.createCell(columnCount++);
+		cell.setCellValue(HeaderConstants.DESIGNATION);
+		cell.setCellStyle(cellStyle);
+		
 	}
 
 }

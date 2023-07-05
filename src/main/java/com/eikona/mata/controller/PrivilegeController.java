@@ -32,14 +32,6 @@ public class PrivilegeController {
 		return "privilege/privilege_list";
 	}
 	
-	@RequestMapping(value = "/api/search/privilege", method = RequestMethod.GET)
-	@PreAuthorize("hasAuthority('role_view')")
-	public @ResponseBody PaginationDto<Privilege> searchRole(Long id, String name, int pageno, String sortField, String sortDir) {
-		
-		PaginationDto<Privilege> dtoList = privilegeService.searchByField(id, name,  pageno, sortField, sortDir);
-		return dtoList;
-	}
-
 	@GetMapping("/privilege/new") 
 	@PreAuthorize("hasAuthority('privilege_create')")
 	public String newPrivilege(Model model) {
@@ -57,11 +49,17 @@ public class PrivilegeController {
 		if (errors.hasErrors()) {
 			model.addAttribute("title",title);
     		return "/privilege/privilege_new";
-    	}else 
+    	}else {
+ 			if(null==privilege.getId())
+ 			  privilegeService.save(privilege);
+ 			else {
+ 				Privilege privilegeObj = privilegeService.getById(privilege.getId());
+ 				privilege.setCreatedBy(privilegeObj.getCreatedBy());
+ 				privilege.setCreatedDate(privilegeObj.getCreatedDate());
  	 			privilegeService.save(privilege);
- 			
+ 			}
  		 	return "redirect:/privilege";
-    	 	
+    	 }	
     }
 
 	@GetMapping("/privilege/edit/{id}")
@@ -78,5 +76,13 @@ public class PrivilegeController {
 	public String deletePrivilege(@PathVariable(value = "id") long id) {
 		this.privilegeService.deleteById(id);
 		return "redirect:/privilege";
+	}
+	
+	@RequestMapping(value = "/api/search/privilege", method = RequestMethod.GET)
+	@PreAuthorize("hasAuthority('role_view')")
+	public @ResponseBody PaginationDto<Privilege> searchRole(Long id, String name, int pageno, String sortField, String sortDir) {
+		
+		PaginationDto<Privilege> dtoList = privilegeService.searchByField(id, name,  pageno, sortField, sortDir);
+		return dtoList;
 	}
 }

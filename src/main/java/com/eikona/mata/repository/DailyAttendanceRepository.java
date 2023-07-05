@@ -16,7 +16,7 @@ public interface DailyAttendanceRepository extends DataTablesRepository<DailyRep
 	@Query("SELECT  dr FROM com.eikona.mata.entity.DailyReport as dr where dr.date >= :sDate and dr.date <= :eDate")
 		List<DailyReport> findByDateAndOrganization(Date sDate,Date eDate);
 
-	DailyReport findByEmpIdAndDate(String trim, Date currDate);
+	DailyReport findByEmpIdAndDate(String empId, Date currDate);
 	
 	@Query("SELECT  dr FROM com.eikona.mata.entity.DailyReport as dr where dr.empId = :empId and dr.date between :sDate and :eDate order by dr.date asc")
 	List<DailyReport> findDetailsByDateCustom(String empId, Date sDate, Date eDate);

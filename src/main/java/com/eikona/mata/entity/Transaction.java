@@ -37,32 +37,24 @@ public class Transaction implements Serializable{
 	private String area;
 	
 	@Column
-	private String branch;
+	private String organization;
 	
+	@Column
+	private String department;
+	
+	@Column
+	private String designation;
+
 	@JoinColumn
 	@ManyToOne
 	private Shift shift;
 	
-	@Column
-	private String organization;
-	
-	@Column
-	private String employeeType;
-	
-	@Column
-	private String department;
-
-	@Column
-	private String deviceId;
+	@JoinColumn
+	@ManyToOne
+	private Device device;
 	
 	@Column
 	private Integer logId;
-	
-	@Column
-	private String deviceName;
-
-	@Column
-	private String serialNo;
 	
 	@Column
 	private Boolean wearingMask;
@@ -87,15 +79,6 @@ public class Transaction implements Serializable{
 	
 	@Column
 	private String deviceType;
-	
-	@Column
-	private String longitude;
-	
-	@Column
-	private String latitude;
-	
-	@Column
-	private String gpsLocation;
 	
 	@Column
 	private String watchlistName;
@@ -140,6 +123,9 @@ public class Transaction implements Serializable{
 	private String livenessScore;
 	
 	@Column
+	private String permissionStatus;
+	
+	@Column
 	private Long totalCount;
 	
 	@Column
@@ -176,61 +162,30 @@ public class Transaction implements Serializable{
 
 
 
-	public String getEmployeeType() {
-		return employeeType;
+	
+
+	public void setPoiConfidence(Double poiConfidence) {
+		this.poiConfidence = poiConfidence;
 	}
 
-	public void setEmployeeType(String employeeType) {
-		this.employeeType = employeeType;
+	public Double getMaskedScore() {
+		return maskedScore;
 	}
 
-	public String getPunchDateStr() {
-		return punchDateStr;
+	public void setMaskedScore(Double maskedScore) {
+		this.maskedScore = maskedScore;
 	}
 
-	public void setPunchDateStr(String punchDateStr) {
-		this.punchDateStr = punchDateStr;
+	public String getAge() {
+		return age;
 	}
 
-	public String getSearchScore() {
-		return searchScore;
-	}
-
-	public void setSearchScore(String searchScore) {
-		this.searchScore = searchScore;
-	}
-
-	public String getLivenessScore() {
-		return livenessScore;
-	}
-
-	public void setLivenessScore(String livenessScore) {
-		this.livenessScore = livenessScore;
-	}
-
-	public String getPunchTimeStr() {
-		
-			return punchTimeStr;
-	}
-
-	public void setPunchTimeStr(String punchTimeStr) {
-		this.punchTimeStr = punchTimeStr;
-	}
-
-	public Boolean getWearingMask() {
-		return wearingMask;
+	public void setAge(String age) {
+		this.age = age;
 	}
 
 	public Long getId() {
 		return id;
-	}
-
-	public String getGender() {
-		return gender;
-	}
-
-	public void setGender(String gender) {
-		this.gender = gender;
 	}
 
 	public void setId(Long id) {
@@ -245,16 +200,39 @@ public class Transaction implements Serializable{
 		this.empId = empId;
 	}
 
-	public String getSerialNo() {
-		return serialNo;
+	public String getName() {
+		return name;
 	}
 
-	public void setSerialNo(String serialNo) {
-		this.serialNo = serialNo;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	
-	public Boolean isWearingMask() {
+	public String getArea() {
+		return area;
+	}
+
+	public void setArea(String area) {
+		this.area = area;
+	}
+
+	public Device getDevice() {
+		return device;
+	}
+
+	public void setDevice(Device device) {
+		this.device = device;
+	}
+
+	public Integer getLogId() {
+		return logId;
+	}
+
+	public void setLogId(Integer logId) {
+		this.logId = logId;
+	}
+
+	public Boolean getWearingMask() {
 		return wearingMask;
 	}
 
@@ -278,42 +256,6 @@ public class Transaction implements Serializable{
 		this.accessType = accessType;
 	}
 
-	public Date getPunchTime() {
-		return punchTime;
-	}
-
-	public void setPunchTime(Date punchTime) {
-		this.punchTime = punchTime;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	
-
-	
-
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
-
-	public String getDeviceName() {
-		return deviceName;
-	}
-
-	public void setDeviceName(String deviceName) {
-		this.deviceName = deviceName;
-	}
-
 	public Date getPunchDate() {
 		return punchDate;
 	}
@@ -322,71 +264,36 @@ public class Transaction implements Serializable{
 		this.punchDate = punchDate;
 	}
 
+	public Date getPunchTime() {
+		return punchTime;
+	}
+
+	public void setPunchTime(Date punchTime) {
+		this.punchTime = punchTime;
+	}
+
+	public String getPunchDateStr() {
+		return punchDateStr;
+	}
+
+	public void setPunchDateStr(String punchDateStr) {
+		this.punchDateStr = punchDateStr;
+	}
+
+	public String getPunchTimeStr() {
+		return punchTimeStr;
+	}
+
+	public void setPunchTimeStr(String punchTimeStr) {
+		this.punchTimeStr = punchTimeStr;
+	}
+
 	public String getDeviceType() {
 		return deviceType;
 	}
 
 	public void setDeviceType(String deviceType) {
 		this.deviceType = deviceType;
-	}
-	
-	
-	public String getDeviceId() {
-		return deviceId;
-	}
-
-	public void setDeviceId(String deviceId) {
-		this.deviceId = deviceId;
-	}
-
-
-	
-	public Integer getLogId() {
-		return logId;
-	}
-
-	public void setLogId(Integer logId) {
-		this.logId = logId;
-	}
-
-	public Long getTotalCount() {
-		return totalCount;
-	}
-
-	public void setTotalCount(Long totalCount) {
-		this.totalCount = totalCount;
-	}
-
-	public String getLongitude() {
-		return longitude;
-	}
-
-	public void setLongitude(String longitude) {
-		this.longitude = longitude;
-	}
-
-	public String getLatitude() {
-		return latitude;
-	}
-
-	public void setLatitude(String latitude) {
-		this.latitude = latitude;
-	}
-
-	public String getGpsLocation() {
-		return gpsLocation;
-	}
-
-	public void setGpsLocation(String gpsLocation) {
-		this.gpsLocation = gpsLocation;
-	}
-
-	public String getArea() {
-		return area;
-	}
-
-	public void setArea(String area) {
-		this.area = area;
 	}
 
 	public String getWatchlistName() {
@@ -421,7 +328,6 @@ public class Transaction implements Serializable{
 		this.appearanceId = appearanceId;
 	}
 
-
 	public String getPoiId() {
 		return poiId;
 	}
@@ -430,31 +336,41 @@ public class Transaction implements Serializable{
 		this.poiId = poiId;
 	}
 
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getSearchScore() {
+		return searchScore;
+	}
+
+	public void setSearchScore(String searchScore) {
+		this.searchScore = searchScore;
+	}
+
+	public String getLivenessScore() {
+		return livenessScore;
+	}
+
+	public void setLivenessScore(String livenessScore) {
+		this.livenessScore = livenessScore;
+	}
+
+	public Long getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(Long totalCount) {
+		this.totalCount = totalCount;
+	}
+
 	public Double getPoiConfidence() {
 		return poiConfidence;
 	}
-
-	public void setPoiConfidence(Double poiConfidence) {
-		this.poiConfidence = poiConfidence;
-	}
-
-	public Double getMaskedScore() {
-		return maskedScore;
-	}
-
-	public void setMaskedScore(Double maskedScore) {
-		this.maskedScore = maskedScore;
-	}
-
-	public String getAge() {
-		return age;
-	}
-
-	public void setAge(String age) {
-		this.age = age;
-	}
-
-
 
 	public String getMaskStatus() {
 		return maskStatus;
@@ -502,6 +418,22 @@ public class Transaction implements Serializable{
 
 	public void setUniqueId(String uniqueId) {
 		this.uniqueId = uniqueId;
+	}
+
+	public String getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(String designation) {
+		this.designation = designation;
+	}
+
+	public String getPermissionStatus() {
+		return permissionStatus;
+	}
+
+	public void setPermissionStatus(String permissionStatus) {
+		this.permissionStatus = permissionStatus;
 	}
 	
 	

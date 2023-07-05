@@ -57,19 +57,24 @@
 						       <li class="breadcrumb-item active"><i class="la la-user"></i>  Employee</li>
 								</ul>
 							</div>
-							<div class="col-auto float-right ml-auto"  sec:authorize="hasAuthority('employee_import')">
-							 <a th:href="@{/import/employee-list}" class="btn add-btn"><i class="las la-file-import"></i>Import Excel</a>
+						   <div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('employee_import')">
+							 <a th:href="@{/import/employee-list}" class="btn add-btn"><i class="las la-file-import"></i> Import Employee Excel</a>
 							</div>
-<!-- 							<div class="col-auto float-right ml-auto"  sec:authorize="hasAuthority('employee_import')"> -->
-<!-- 							 <a th:href="@{/import/employee-shift-list}" class="btn add-btn"><i class="las la-file-import"></i>Import Shift Excel</a> -->
-<!-- 							</div> -->
+							<div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('employee_import')">
+							 <a th:href="@{/import/image-directory}" class="btn add-btn"><i class="las la-file-upload"></i> Import Image Directory</a>
+							</div>
+							<div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('employee_import')">
+							 <a th:href="@{/import/employee-delete-list}" class="btn add-btn"><i class="las la-trash"></i> Import Excel For Delete</a>
+							</div>
+							<div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('employee_create')">
+							 <a th:href="@{/update-employee-area}" class="btn add-btn"><i class="las la-sync"></i> Sync Areas To Employees </a>
+						   </div>
 							<div class="col-auto float-right ml-auto"  id="excel-button" sec:authorize="hasAuthority('employee_export')">
-							<button  value ="excel" type="button" class="btn btn-primary export-data"><i class="las la-download"></i> Export to Excel</button>
-						</div>
-							
-<!-- 							<div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('employee_create')"> -->
-<!-- 							<a th:href = "@{/employee/new}" class="btn add-btn" ><i class="fa fa-plus"></i> Add Employee</a> -->
-<!-- 							</div> -->
+							<button  value ="excel" type="button" class="btn add-btn export-data"><i class="las la-download"></i> Export To Excel</button>
+						   </div>
+							<div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('employee_create')">
+							<a th:href = "@{/employee/new}" class="btn add-btn" ><i class="fa fa-plus"></i> Add Employee</a>
+							</div>
 						</div>
 					</div>
 					<!-- /Page Header -->
@@ -79,11 +84,11 @@
 						<div class="form-group form-focus select-focus">
 						 	<label ><b>Add Filter:</b></label>
 					        <select id="people" name="people" multiple>
-								<option value="id" >Id</option>
 								<option value="name" >Name</option>
 								<option value="empId" >Employee Id</option>
 								<option value="uniqueId">Unique Id</option> 
 								<option value="department" >Department</option>
+								<option value="designation" >Designation</option>
 					        </select>
 						</div>
 					</div>
@@ -91,7 +96,6 @@
 					<div class="col-sm-6 col-md-1" id="hide-search" style="display: none;"></div>
 				</div>
 				<div style="display:none">
-					<input type="hidden" id="orginalById">
 					<input type="hidden" id="orginalByName">
 					<input type="hidden" id="orginalByEmpId">
 					<input type="hidden" id="orginalByDepartment">
@@ -129,8 +133,9 @@
 	</div> 
 		<div style="display:none;">
 		<div sec:authorize="hasAuthority('employee_export')"> <span id="span_export"></span></div>
-<!-- 		<div sec:authorize="hasAuthority('employee_update')"> <span id="span_update"></span></div> -->
+		<div sec:authorize="hasAuthority('employee_update')"> <span id="span_update"></span></div>
 		<div sec:authorize="hasAuthority('employee_delete')"> <span id="span_delete"></span></div>
+		<div sec:authorize="hasAuthority('employee_area_association')"> <span id="span_area"></span></div>
 	</div>
 
 	<div th:replace="matafooter :: footer"></div>
@@ -142,8 +147,9 @@
 		$(document).ready(function() {
 			$("#employee_menu").addClass("active");
 			var showExport = $("#span_export").length>0;
-// 			var showUpdate = $("#span_update").length>0;
+			var showUpdate = $("#span_update").length>0;
 			var showDelete = $("#span_delete").length>0;
+			var showArea = $("#span_area").length>0;
 			$(function(){
 		        $('#people').multiSelect();
 		        $('#ice-cream').multiSelect();
@@ -211,13 +217,12 @@
 			
 			
 			$(function(){
-        		var id = document.getElementById('orginalById').value;
 				var name= document.getElementById('orginalByName').value;
 				var empId= document.getElementById('orginalByEmpId').value;
 				var department= document.getElementById('orginalByDepartment').value;
 				var uId= document.getElementById('orginalByUniqueId').value;
 				
-				ajaxCall(id, name,empId,department,uId, "sortByField", "previousPage", 1,"id","desc");
+				ajaxCall(name,empId,department,uId,"", "sortByField", "previousPage", 1,"id","desc");
         	})
         	
         	
@@ -226,12 +231,11 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('orginalById').value;
 				var name= document.getElementById('orginalByName').value;
 				var empId= document.getElementById('orginalByEmpId').value;
 				var department= document.getElementById('orginalByDepartment').value;
 				var uId= document.getElementById('orginalByUniqueId').value;
-				ajaxCall(id, name,empId,department,uId,"sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(name,empId,department,uId,"","sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
 				
         	})
         	//end sort 
@@ -240,12 +244,11 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('orginalById').value;
 				var name= document.getElementById('orginalByName').value;
 				var empId= document.getElementById('orginalByEmpId').value;
 				var department= document.getElementById('orginalByDepartment').value;
 				var uId= document.getElementById('orginalByUniqueId').value;
-				ajaxCall(id, name,empId,department,uId, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(name,empId,department,uId,"", "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
         	})
 			
 			//start search and sort field
@@ -254,13 +257,13 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('id').value;
 				var name = document.getElementById('name').value;
 				var empId = document.getElementById('empId').value;
 				var department= document.getElementById('department').value;
+				var designation= document.getElementById('designation').value;
 				var uId= document.getElementById('uniqueId').value;
 				uncheckedRemove();
-				ajaxCall(id, name,empId,department,uId, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(name,empId,department,uId,designation, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
 				
         	})
         	//end search and sort field
@@ -270,33 +273,33 @@
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('id').value;
 				var name = document.getElementById('name').value;
 				var empId = document.getElementById('empId').value;
 				var department= document.getElementById('department').value;
+				var designation= document.getElementById('designation').value;
 				var uId= document.getElementById('uniqueId').value;
 				uncheckedRemove();
-				ajaxCall(id, name,empId,department,uId,"sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(name,empId,department,uId,designation,"sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
         	})
 			
         	$(document).on('click', '.searchButtonField', function(e) {
         		uncheckedAppend();
-        		var id = document.getElementById('id').value;
 				var name = document.getElementById('name').value;
 				var empId = document.getElementById('empId').value;
 				var department= document.getElementById('department').value;
+				var designation= document.getElementById('designation').value;
 				var uId= document.getElementById('uniqueId').value;
 				uncheckedRemove();
-				ajaxCall(id, name,empId,department,uId, "sortBySearchField", "nextPage", 1,"id","desc");
+				ajaxCall(name,empId,department,uId,designation, "sortBySearchField", "nextPage", 1,"id","desc");
         	})
 	        	
-	        function ajaxCall(id, name,empId,department,uId, headFlag, pageFlag, pageno, sortField,sortDir) {
+	        function ajaxCall(name,empId,department,uniqueId,designation, headFlag, pageFlag, pageno, sortField,sortDir) {
 				var data = {
-	           		"id" : id,
 	           		"name":name,
 	           		"empId":empId,
 	           		"department":department,
-	           		"uId":uId,
+	           		"uniqueId":uniqueId,
+	           		"designation":designation,
 	           		"pageno":pageno,
 	           		"sortField":sortField,
 	           		"sortDir":sortDir
@@ -312,7 +315,7 @@
 	               		var pageno = pagenoData(result, pageFlag);
 	               		
 	               		if("sortBySearchField" == headFlag && showExport){
-	               			$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn btn-primary export-data-by-search"><i class="las la-download"></i> Export to Excel</button>');
+	               			$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn export-data-by-search"><i class="las la-download"></i> Export to Excel</button>');
 	               		}
 						$("#table-header").html('').append(table_header);	
 						$("tbody#table-body").html('').append(table_data);
@@ -329,8 +332,11 @@
 						'<th><b>Name</b></th>'+
 						'<th><b>Unique Id</b></th>'+
 						'<th><b>Employee Id</b></th>'+
-						'<th><b>Department</b></th>';
-					if(showDelete)
+						'<th><b>Department</b></th>'+
+						'<th><b>Designation</b></th>';
+					if(showArea)
+						table_header+='<th><b>Area</b></th>';
+					if(showUpdate || showDelete)
 						table_header+='<th><b>Actions</b></th>';
 				}else {
 					table_header = '<th><button  value="'+result.page_number+'-id-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Id</b></button>'+
@@ -342,8 +348,12 @@
 						'<button  value="'+result.page_number+'-empId-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee Id</b></button>'+	
 					'</th><th>'+		
 						'<button  value="'+result.page_number+'-department-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Department</b></button>'+	
+					'</th><th>'+		
+						'<button  value="'+result.page_number+'-designation-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Designation</b></button>'+	
 					'</th>';
-					if(showDelete)
+					if(showArea)
+						table_header+='<th><b>Area</b></th>';
+					if(showUpdate || showDelete)
 						table_header+='<th><b>Actions</b></th>';
 				}
 				return table_header;
@@ -370,20 +380,21 @@
               	 		table_data += '<td></td>';
               	 	}
               		if(null != customer.department){
-              	 		table_data += '<td>' + customer.department + '</td>';
+              	 		table_data += '<td>' + customer.department.name + '</td>';
               	 	} else{
               	 		table_data += '<td></td>';
               	 	}
-//               		if(null != customer.shift){
-//               	 		table_data += '<td>' + customer.shift.name + '</td>';
-//               	 	} else{
-//               	 		table_data += '<td></td>';
-//               	 	}
-//               		if(showUpdate)
-//            				table_data +='<td> <a href="/employee/edit/'+customer.id+'" class="btn btn-primary"><i class="las la-edit"></i></a>';
-           				
+              		if(null != customer.designation){
+              	 		table_data += '<td>' + customer.designation.name + '</td>';
+              	 	} else{
+              	 		table_data += '<td></td>';
+              	 	}
+              		if(showArea)
+           				table_data +='<td> <a href="/employee-to-area/association/'+customer.id+'" class="btn btn-primary"><i class="las la-landmark"></i></a></td>';
+              		if(showUpdate)
+       					table_data +='<td><a href="/employee/edit/'+customer.id+'" class="btn btn-primary"><i class="las la-trash"></i></a>';	
        				if(showDelete)
-       					table_data +='<td><a href="/employee/delete/'+customer.id+'" class="btn btn-danger" id="deleteButton"><i class="las la-trash"></i></a></td></tr>';
+       					table_data +='&nbsp;&nbsp;<a href="/employee/delete/'+customer.id+'" class="btn btn-danger" id="deleteButton"><i class="las la-trash"></i></a></td></tr>';
               		
            		});
            		return table_data;
@@ -538,14 +549,15 @@
 			$(document).on('click', '.export-data-by-search', function(e) {
 				uncheckedAppend();
 				var type = $(this).val();
-				var id = document.getElementById('id').value;
 	            var employeeName = document.getElementById('name').value;
 	            var employeeId = document.getElementById('empId').value;
 	            var department = document.getElementById('department').value;
+	            var designation = document.getElementById('designation').value;
 	            var uId= document.getElementById('uniqueId').value;
 	            uncheckedRemove();
                 if("excel" == type){
-                	exportData(id,employeeName,employeeId,department,uId,"xlsx");
+                	$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn" disabled><i class="las la-download"></i> Export To Excel  <span class="spinner-border spinner-border-sm"></span></button>');
+                	exportData(employeeName,employeeId,department,uId,designation,"export-data-by-search","xlsx");
                 }
 			})
 			
@@ -554,17 +566,18 @@
 				var type = $(this).val();
                 
                 if("excel" == type){
-                	exportData(null,"","","","","xlsx");
+                	$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn" disabled><i class="las la-download"></i> Export To Excel  <span class="spinner-border spinner-border-sm"></span></button>');
+                	exportData("","","","","","export-data","xlsx");
                 }
 			})
 			
-			function  exportData(id,name,empId,department,uId,flag) {
+			function  exportData(name,empId,department,uniqueId,designation,excelButtonClass,flag) {
                 var data = {
-					"id":id,
                		"name" : name,
                		"empId":empId,
                		"department":department,
-               		"uId":uId,
+               		"uniqueId":uniqueId,
+               		"designation":designation,
 	           		"flag":flag
                 }; 
     	            
@@ -602,6 +615,7 @@
 	                        a[0].click();
 	                        $("body").remove(a);
 	                    }
+	                    $("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn '+excelButtonClass+'"><i class="las la-download"></i> Export To Excel </button>'); 
 	                }
             })
 		}

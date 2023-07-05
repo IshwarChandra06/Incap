@@ -1,6 +1,7 @@
 package com.eikona.mata.service;
 
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ public interface EmployeeService {
 	/**
 	 * This function saves the employee in database according to the respective object.  
 	 * @param 
+	 * @return 
 	 */
     Employee save(Employee employee);
     /**
@@ -26,24 +28,25 @@ public interface EmployeeService {
 	 */
     Employee getById(long id);
     
+	/**
+	 * This function retrieves the employee data from the excel file and set into database.
+	 * @param file -MultipartFile
+	 * @param principal
+	 */
+    
     /**
 	 * This function deletes the employee from database according to the respective id.  
 	 * @param
 	 */
-	void deleteById(long id);
-    
-	/**
-	 * This function retrieves the employee data from the excel file and set into database.
-	 * @param file -MultipartFile
-	 */
-	String storeCosecEmployeeList(MultipartFile file);
+	void deleteById(long id, Principal principal);
 	
-	String storeEmployeeShiftList(MultipartFile file);
+	String storeCosecEmployeeList(MultipartFile file,Principal principal);
 	
+	PaginationDto<Employee> searchByField(String name, String empId, String department,String designation, String uId, int pageno, String sortField, String sortDir, String orgname);
 	
-	PaginationDto<Employee> searchByField(Long id, String name, String empId, String department, String uId, int pageno, String sortField, String sortDir);
+    String deleteEmployeeList(MultipartFile file);
 	
-	
+	void saveEmployeeAreaAssociation(Employee employee, Long id);
 
 
 

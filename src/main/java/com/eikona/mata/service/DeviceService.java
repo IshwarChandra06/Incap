@@ -30,9 +30,13 @@ public interface DeviceService {
 	 */
     void deleteById(long id);
     
+	
+	PaginationDto<Device> searchByField(String name, String ipAddress, String area,int pageno, String sortField, String sortDir, String orgName);
+	
+	void employeeSyncFromMataToDevice(long id, String orgName);
+    
     String generateTransactionByDate(long id, String sDate, String eDate);
     
-	PaginationDto<Device> searchByField(int pageno,
-			String sortField, String sortDir);
+	
 	
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.eikona.mata.constants.ApplicationConstants;
 import com.eikona.mata.constants.NumberConstants;
+import com.eikona.mata.entity.ActionDetails;
 
 @Component
 public class GeneralSpecificationUtil<T> {
@@ -22,15 +23,6 @@ public class GeneralSpecificationUtil<T> {
 	
 	public Specification<T> isNullSpecification(String field) {
 		return (root, query, cb) -> {
-			if (field == null || field.isEmpty()) {
-				return cb.conjunction();
-			}
-			return cb.isNull(root.get(field));
-		};
-	}
-	public Specification<T> distinctSpecification(String field) {
-		return (root, query, cb) -> {
-			query.distinct(true);
 			if (field == null || field.isEmpty()) {
 				return cb.conjunction();
 			}
@@ -155,5 +147,33 @@ public class GeneralSpecificationUtil<T> {
 			return cb.equal(root.get(obj).get(field), value);
 		};
 	}
+	public Specification<T> foreignKeyTripleSpecification(String value, String obj, String secondObj, String thirdObj, String field){
+		return (root, query, cb) -> {
+			if (value == null || value.isEmpty() || NumberConstants.STRING_ZERO.equalsIgnoreCase(value)) {
+				return cb.conjunction();
+			}
+			return cb.like(cb.lower(root.join(obj).join(secondObj).join(thirdObj).get(field)), ApplicationConstants.DELIMITER_PERCENTAGE + value + ApplicationConstants.DELIMITER_PERCENTAGE);
+		};
+	}
 
+	public Specification<T> stringEqualSpecification(String value, String field) {
+		return (root, query, cb) -> {
+			if (value == null || value.isEmpty()) {
+				return cb.conjunction();
+			}
+			return cb.equal(cb.lower(root.<String>get(field)), value);
+		};
+	}
+
+	public Specification<ActionDetails> foreignKeyDoubleObjectBooleanSpecification(boolean value, String obj,String secondObj, String field) {
+		return (root, query, cb) -> {
+			return cb.equal(root.join(obj).join(secondObj).get(field), value);
+		};
+	}
+	
+	public Specification<T> allSpecification() {
+		return (root, query, cb) -> {
+			return cb.conjunction();
+		};
+	}
 }

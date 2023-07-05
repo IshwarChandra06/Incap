@@ -87,7 +87,6 @@ public final class ApplicationConstants {
 	public static final String  DATE_FORMAT_OF_US_WITHOUT_DELIMITER = "yyyyMMdd";
 	public static final String  DATE_TIME_FORMAT_OF_INDIA = "dd-MM-yyyy HH:mm:ss";
 	public static final String  DATE_TIME_FORMAT_OF_INDIA_WITHOUT_DELIMITER = "ddMMyyyyHHmmss";
-	public static final String  DATE_TIME_FORMAT_OF_INDIA_SPLIT_BY_SLASH = "dd/MM/yyyy hh:mm:ss aa";
 	public static final String  DATE_FORMAT_OF_INDIA = "dd-MM-yyyy";
 	public static final String  DATE_FORMAT_OF_INDIA_WITHOUT_DELIMITER = "ddMMyyyy";
 	public static final String  DATE_FORMAT_OF_INDIA_SPLIT_BY_SLASH = "dd/MM/yyyy";
@@ -95,6 +94,7 @@ public final class ApplicationConstants {
 	public static final String  MONTH_DAY_YEAR = "MM/dd/yyyy";
 	public static final String DATE_TIME_FORMAT_OF_INDIA_SPLIT_BY_UNDERSCORE = "dd_MM_yyyy hh_mm_ss";
 	public static final String DATE_TIME_FORMAT_OF_INDIA_SPLIT_BY_SPACE ="dd MM yyyy_HH mm ss";
+	public static final String DATE_TIME_FORMAT_OF_INDIA_SPLIT_BY_SLASH = "dd/MM/yyyy hh:mm:ss aa";
 	
 	public static final String MONTH_YEAR_SPLIT_BY_SLASH = "MM/yyyy";
 	public static final String YEAR_MONTH_SPLIT_BY_HYPHEN = "yyyy-MM";
@@ -122,6 +122,7 @@ public final class ApplicationConstants {
 	public static final String  MIME_TYPE_JPG = "image/jpg";
 	public static final String  MIME_TYPE_TEXT ="text/plain";
 	public static final String TOTAL_PRESENT = "Total Present";
+	public static final String LAST_MODIFIED_DATE = "lastModifiedDate";
 	
 	
 	

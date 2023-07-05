@@ -49,7 +49,7 @@ public class SecurityConfig {
 
 		@Override
 		protected void configure(HttpSecurity http) throws Exception{
-			http.authorizeRequests().antMatchers(HttpMethod.POST, "/LAPI/**" ,"/Subscribe/**","/corsight/**").permitAll();
+			http.authorizeRequests().antMatchers(HttpMethod.POST, "/LAPI/**" ,"/Subscribe/**","/corsight/**","/hfsecurity/**").permitAll();
 			http.antMatcher("/rest/**")
 			.cors()
            
@@ -116,13 +116,13 @@ public class SecurityConfig {
 			 .csrf().disable()
 			 .authorizeRequests()
               			
-			 .antMatchers(HttpMethod.POST, "/LAPI/**" ,"/Subscribe/**","/corsight/**").permitAll()
+			 .antMatchers(HttpMethod.POST, "/LAPI/**" ,"/Subscribe/**","/corsight/**","/hfsecurity/**").permitAll()
 			 .antMatchers("/resources/**", "/webjars/**","/assets/**","/api/**").permitAll()
 			 .anyRequest().authenticated()
 		    
 			 .and()
 			 .formLogin().loginPage("/login")
-			 .defaultSuccessUrl("/employee")
+			 .defaultSuccessUrl("/organization")
 			 .failureUrl("/login?error").permitAll()
 		     
 			 .and()

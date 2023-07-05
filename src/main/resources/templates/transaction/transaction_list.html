@@ -61,12 +61,12 @@
 							</ul>
 						</div>
 						<div class="col-auto float-right ml-auto"  id="excel-button" sec:authorize="hasAuthority('transaction_export')">
-							<button  value ="excel" type="button" class="btn btn-primary export-data"><i class="las la-download"></i> Export to Excel</button>
+							<button  value ="excel" type="button" class="btn add-btn export-data"><i class="las la-download"></i> Export to Excel</button>
 						</div>
-						 <div class="col-auto float-right ml-auto"  sec:authorize="hasAuthority('transaction_view')" >
-							<a th:href="@{/push-events-to-cosec}" class="btn add-btn"> <i class="las la-sync"></i> Sync Events To Cosec
-							</a> 
-						</div>
+<!-- 						 <div class="col-auto float-right ml-auto"  sec:authorize="hasAuthority('transaction_view')" > -->
+<!-- 							<a th:href="@{/push-events-to-cosec}" class="btn add-btn"> <i class="las la-sync"></i> Sync Events To Cosec -->
+<!-- 							</a>  -->
+<!-- 						</div> -->
 					</div>
 				</div>
 				<!-- /Page Header -->
@@ -77,27 +77,23 @@
 						<div class="form-group form-focus select-focus">
 						 	<label ><b>Add Filter:</b></label>
 					        <select id="people" name="people" multiple>
-								<option value="id" >Id</option>
 								<option value="date" >Date</option>
 								<option value="employeeId" >Employee Id</option>
 								<option value="uniqueId" >Unique Id</option>
 								<option value="employeeName" >Employee Name</option>
 								<option value="department" >Department</option>
-								<option value="device" >Device</option>
+								<option value="designation" >Designation</option>
+								<option value="area" >Area</option>
+								<option value="deviceType" >Device Type</option>
+								<option value="device" >Device Name</option>
+								<option value="employee" >Employee</option>
 								
 					        </select>
 						</div>
 					</div>
-					<div class="col-sm-1 col-md-1"> 
-						<label><b>Employee</b></label>
-						<input type="checkbox" id="only-employee" name="contact" value="only-employee">
-					</div>
-					<div class="col-sm-6 col-md-3">  
-						<a class="btn btn-success btn-block searchButtonField"> Search </a>  
-					</div>
+					<div class="col-sm-6 col-md-1" id="hide-search" style="display: none;"></div>
 				</div>
 				<div style="display:none">
-					<input type="hidden" id="orginalById">
 					<input type="hidden" id="orginalByStartDate">
 					<input type="hidden" id="orginalByEndDate">
 					<input type="hidden" id="orginalByEmployeeId">
@@ -167,46 +163,117 @@
 			$("#people").change(function() {
 				var selectedvalue = $("#people").val();
 				var selectedText = $("#people").text();
-				
 	     	    var matches = document.querySelectorAll('input[type="checkbox"]:not(:checked)');
+	     	   for(var i=0; i< matches.length; i++) {
+					
+					if(matches[i].value == "date"){
+						var oldInput = document.getElementById("remove-element-startDate");
+						if(oldInput != null){
+							document.getElementById("remove-element-startDate").remove();
+							document.getElementById("remove-element-endDate").remove();
+						}
+						
+					}else{
+						var oldInput = document.getElementById(matches[i].value);
+						if(oldInput != null)
+							document.getElementById("remove-element-"+matches[i].value).remove();
+					}
+	     	    }
+        	    var inputText = '';
+        	    for(var i=0; i< selectedvalue.length; i++) {
+        	    	
+        	    	if(selectedvalue[i]=="date"){
+						var oldInput = document.getElementById("remove-element-startDate");
+						var oldInput = document.getElementById("remove-element-startDate");
+						if(oldInput == null){
+							inputText += '<div class="col-md-3" id="remove-element-startDate"><div class="form-group">'+
+								'<label><b>'+'StartDate'+':</b></label> '+
+								'<input type="date" placeholder="Enter startDate'+'" id="startDate" class="form-control">'+
+							'</div></div>';
+							inputText += '<div class="col-md-3" id="remove-element-endDate"><div class="form-group">'+
+								'<label><b>'+'EndDate'+':</b></label> '+
+								'<input type="date" placeholder="Enter endDate'+'" id="endDate" class="form-control">'+
+							'</div></div>';
+						}
+        	    	}else{
+						var oldInput = document.getElementById(selectedvalue[i]);
+						
+						if(oldInput == null){
+							if(selectedvalue[i]=="employee"){
+								inputText += '<div class="col-md-3" id="remove-element-'+selectedvalue[i]+'"><div class="form-group">'+
+									'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
+									'<select class="form-control" id="'+selectedvalue[i]+'">'+
+										'<option value="Registered">Registered</option>'+
+										'<option value="Unregistered">Unregistered</option>'+
+							        '</select>'+
+								'</div></div>';
+							}else if(selectedvalue[i]=="deviceType"){
+								inputText += '<div class="col-md-3" id="remove-element-'+selectedvalue[i]+'"><div class="form-group">'+
+								'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
+								'<select class="form-control" id="'+selectedvalue[i]+'">'+
+									'<option value="HF-Security">HF-Security</option>'+
+									'<option value="Corsight">Corsight</option>'+
+						        '</select>'+
+							'</div></div>';
+						}else{
+								inputText += '<div class="col-md-3" id="remove-element-'+selectedvalue[i]+'"><div class="form-group">'+
+								'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
+								'<input type="text" placeholder="Enter '+selectedvalue[i]+'" id="'+selectedvalue[i]+'" class="form-control">'+
+							'</div></div>';
+							}
+								
+						}
+						}
+        	    	}
+        	    	
+					document.getElementById("hide-search").remove();
+				
+					inputText +='<div class="col-sm-6 col-md-1" id="hide-search" style="margin-top:34px">'+
+							'<a class="btn btn-success btn-block searchButtonField"> Search </a><br><br>'+
+					'</div>';
+					
+	        	    $("#input-field").append(inputText);
+	        	    
+	        	    if(selectedvalue.length == 0){
+						$("#hide-search").css("display","none"); 
+					 }
+			});
+			
+			
+			function uncheckedRemove(){
+				var matches = document.querySelectorAll('input[type="checkbox"]:not(:checked)');
+				for(var i=0; i< matches.length; i++) {
+					
+					if(matches[i].value == "date"){
+						var oldInput = document.getElementById("startDate");
+						if(oldInput != null){
+							document.getElementById('startDate').remove();
+						 	document.getElementById('endDate').remove();
+						}
+					}else{
+						var oldInput = document.getElementById(matches[i].value);
+						 if(oldInput != null)
+							 oldInput.remove();
+					}
+	     	    }
+			}
+			function uncheckedAppend(){
+				var matches = document.querySelectorAll('input[type="checkbox"]:not(:checked)');
 	     	    var unchecked ='';
 	     	    for(var i=0; i< matches.length; i++) {
-	     	    	unchecked += '<input type="hidden" id="'+matches[i].value+'"/>';
-	     	    	unchecked += '<input type="hidden" id="startDate"/>';
-	     	    	unchecked += '<input type="hidden" id="endDate"/>';
+					 if(matches[i].value=="date"){
+					 	unchecked += '<input type="hidden" id="startDate"/><input type="hidden" id="endDate"/>';
+					 }else
+	     	    		unchecked += '<input type="hidden" id="'+matches[i].value+'"/>';
 	     	    }
-	     	    
-        	    var inputText = '';
-        	    $("#input-field").empty();
-        	   
-        	    for(var i=0; i< selectedvalue.length; i++) {
-        	    	if(selectedvalue[i]=="date"){
-						inputText += '<div class="col-md-3"><div class="form-group">'+
-						'<label><b>'+'StartDate'+':</b></label> '+
-						'<input type="date" placeholder="Enter startDate'+'" id="startDate" class="form-control">'+
-					'</div></div>';
-						inputText += '<div class="col-md-3"><div class="form-group">'+
-						'<label><b>'+'EndDate'+':</b></label> '+
-						'<input type="date" placeholder="Enter endDate'+'" id="endDate" class="form-control">'+
-					'</div></div>';
-					}
-					else{
-						inputText += '<div class="col-md-3"><div class="form-group">'+
-						'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
-						'<input type="text" placeholder="Enter '+selectedvalue[i]+'" id="'+selectedvalue[i]+'" class="form-control">'+
-					'</div></div>';
-					}
-				}
-				
-				$("#input-field").append(inputText+unchecked);
-			});
+	     	    $("#input-field").append(unchecked);
+			}
 			
 			//start sort
 			$(document).on('click', '.sortByField', function(e) {
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('orginalById').value;
                 var employeeId= document.getElementById('orginalByEmployeeId').value;
                 var employeeName = document.getElementById('orginalByEmployeeName').value;
                 var department = document.getElementById('orginalByDepartment').value;
@@ -215,7 +282,7 @@
 
                 var sDate = "";
                 
-				ajaxCall(id, sDate, sDate, employeeId, employeeName, device,department,uId, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(sDate, sDate, employeeId, employeeName, device,department,uId,"","","","", "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
 				
         	})
         	//end sort 
@@ -225,7 +292,6 @@
         	})
 			
 			function defautlSearch(){
-				var id = document.getElementById('orginalById').value;
                 var employeeId= document.getElementById('orginalByEmployeeId').value;
                 var employeeName = document.getElementById('orginalByEmployeeName').value;
                 var device = document.getElementById('orginalByDevice').value;
@@ -233,14 +299,13 @@
                 var uId = document.getElementById('orginalByUniqueId').value;
                 var sDate = "";
                 
-				ajaxCall(id, sDate, sDate, employeeId, employeeName, device,department,uId, "sortByField", "previousPage", 1,"id","desc");
+				ajaxCall(sDate, sDate, employeeId, employeeName, device,department,uId,"","","","", "sortByField", "previousPage", 1,"id","desc");
 			}
         	
 			$(document).on('click', '.previousPage', function(e) {
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('orginalById').value;
                 var employeeId= document.getElementById('orginalByEmployeeId').value;
                 var employeeName = document.getElementById('orginalByEmployeeName').value;
                 var device = document.getElementById('orginalByDevice').value;
@@ -248,42 +313,52 @@
                 var uId = document.getElementById('orginalByUniqueId').value;
                 var sDate = "";
                 
-				ajaxCall(id, sDate, sDate, employeeId, employeeName, device,department,uId, "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				ajaxCall(sDate, sDate, employeeId, employeeName, device,department,uId,"","","","", "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
         	})
 			
 			//start search and sort field
 			$(document).on('click', '.sortBySearchField', function(e) {
+				uncheckedAppend();
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('id').value;
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
                 var employeeId= document.getElementById('employeeId').value;
                 var employeeName = document.getElementById('employeeName').value;
+                var deviceType = document.getElementById('deviceType').value;
                 var device = document.getElementById('device').value;
                 var department = document.getElementById('department').value;
+                var designation = document.getElementById('designation').value;
+                var area = document.getElementById('area').value;
                 var uId = document.getElementById('uniqueId').value;
-				checkDate();
-				ajaxCall(id, sDate, eDate, employeeId, employeeName, device,department,uId,"sortBySearchField", "nextPage", valueList[0], valueList[1], valueList[2]);
+                var emp = document.getElementById('employee').value;
+                checkDate();
+                uncheckedRemove();
+				ajaxCall(sDate, eDate, employeeId, employeeName, device,department,uId,designation,area,emp,deviceType,"sortBySearchField", "nextPage", valueList[0], valueList[1], valueList[2]);
 				
         	})
         	//end search and sort field
         	
         	$(document).on('click', '.nextPage', function(e) {
+        		uncheckedAppend();
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				var id = document.getElementById('id').value;
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
                 var employeeId= document.getElementById('employeeId').value;
                 var employeeName = document.getElementById('employeeName').value;
                 var device = document.getElementById('device').value;
+                var deviceType = document.getElementById('deviceType').value;
                 var department = document.getElementById('department').value;
                 var uId = document.getElementById('uniqueId').value;
-				checkDate();
-				ajaxCall(id, sDate, eDate, employeeId, employeeName, device,department,uId, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+                var designation = document.getElementById('designation').value;
+                var area = document.getElementById('area').value;
+                var emp = document.getElementById('employee').value;
+                checkDate();
+                uncheckedRemove();
+				ajaxCall(sDate, eDate, employeeId, employeeName, device,department,uId,designation,area,emp,deviceType, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
         	})
 			
         	$(document).on('click', '.searchButtonField', function(e) {
@@ -292,16 +367,21 @@
         		if(selectedvalue.length == 0)
         			defautlSearch();
         		else{
-        			var id = document.getElementById('id').value;
+        			uncheckedAppend();
     				var sDate = document.getElementById('startDate').value;
     	            var eDate = document.getElementById('endDate').value;
                     var employeeId= document.getElementById('employeeId').value;
                     var employeeName = document.getElementById('employeeName').value;
                     var device = document.getElementById('device').value;
+                    var deviceType = document.getElementById('deviceType').value;
                     var department = document.getElementById('department').value;
                     var uId = document.getElementById('uniqueId').value;
-					checkDate();
-					ajaxCall(id, sDate, eDate, employeeId, employeeName, device,department,uId,"sortBySearchField", "nextPage", 1, "id", "desc");
+                    var designation = document.getElementById('designation').value;
+                    var area = document.getElementById('area').value;
+                    var emp = document.getElementById('employee').value;
+                    checkDate();
+                    uncheckedRemove();
+					ajaxCall(sDate, eDate, employeeId, employeeName, device,department,uId,designation,area,emp,deviceType,"sortBySearchField", "nextPage", 1, "id", "desc");
         		}
         	})
         	
@@ -325,18 +405,19 @@
 				}
 		}
 	        	
-	        function ajaxCall(id, sDate, eDate, employeeId, employeeName, device,department,uId, headFlag, pageFlag, pageno, sortField,sortDir) {
-				var employee=($("#only-employee").is(":checked")?"Only Employee":"");
+	        function ajaxCall(sDate, eDate, employeeId, employeeName, device,department,uId,designation,area,emp,deviceType, headFlag, pageFlag, pageno, sortField,sortDir) {
 				var data = {
-					"employee":employee,
-	           		"id" : id,
 	           		"sDate":sDate,
 	           		"eDate":eDate,
 	           		"employeeId":employeeId,
 	           		"employeeName":employeeName,
-	           		"department":department,
-	           		"device":device,
 	           		"uId":uId,
+	           		"department":department,
+	           		"designation":designation,
+	           		"area":area,
+	           		"device":device,
+	           		"emp":emp,
+	           		"deviceType":deviceType,
 	           		"pageno":pageno,
 	           		"sortField":sortField,
 	           		"sortDir":sortDir
@@ -352,7 +433,7 @@
 	               		var pageno = pagenoData(result, pageFlag);
 	               		
 	               		if("sortBySearchField" == headFlag && showExport){
-	               			$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn btn-primary export-data-by-search"><i class="las la-download"></i> Export to Excel</button>');
+	               			$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn export-data-by-search"><i class="las la-download"></i> Export to Excel</button>');
 	               		}
 	               		
 						$("#table-header").html('').append(table_header);			
@@ -369,33 +450,41 @@
 	        function tableHeader(result, flag) {
 				var table_header ='';
 				if(result.data.length == 0) {
-					table_header = '<th><b>Id</b></th>'+
+					table_header = 
 					'<td><b>Date</b></td>'+
 					'<td><b>Time</b></td>'+
-					'<td><b>Unique Id </b></td>'+
 					'<td><b>Employee Id </b></td>'+
 					'<td><b>Name</b></td>'+
+					'<td><b>Unique Id </b></td>'+
 					'<td><b>Department</b></td>'+
-					'<td><b>Device</b></td>'+
+					'<td><b>Designation</b></td>'+
+					'<td><b>Area</b></td>'+
+					'<td><b>Device Type</b></td>'+
+					'<td><b>Device Name</b></td>'+
 					'<td><b>Image</b></td>';
 						
 						
 				}else {
-					table_header = '<th><button  value="'+result.page_number+'-id-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Id</b></button>'+
-		   			'</th><th>'+
+					table_header = '<th>'+
 		   				'<button  value="'+result.page_number+'-punchDateStr-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Date</b></button>'+
 		   			'</th><th>'+		
 						'<button  value="'+result.page_number+'-punchTimeStr-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Time</b></button>'+	
 					'</th><th>'+
-		   				'<button  value="'+result.page_number+'-uniqueId-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Unique Id</b></button>'+
-		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-empId-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Employee Id</b></button>'+
 		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-name-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Name</b></button>'+
 		   			'</th><th>'+
+		   				'<button  value="'+result.page_number+'-uniqueId-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Unique Id</b></button>'+
+		   			'</th><th>'+
 		   				'<button  value="'+result.page_number+'-department-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Department</b></button>'+
 		   			'</th><th>'+
-		   				'<button  value="'+result.page_number+'-deviceName-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Device</b></button>'+
+		   				'<button  value="'+result.page_number+'-designation-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Designation</b></button>'+
+		   			'</th><th>'+
+		   				'<button  value="'+result.page_number+'-area-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Area</b></button>'+
+		   			'</th><th>'+
+		   				'<button  value="'+result.page_number+'-device-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Device Type</b></button>'+
+		   			'</th><th>'+
+		   				'<button  value="'+result.page_number+'-device-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Device Name</b></button>'+
 		   			'</th><th><b>Image</b></th>';
 				}
 				return table_header;
@@ -405,7 +494,6 @@
 				console.warn(result);
 				var table_data ='';
            		$.each(result.data, function(i, customer) {
-           			table_data +='<tr><td>' + customer.id + '</td>' ;
                	   
            			if(null!=customer.punchDateStr){
            				table_data += '<td>' + customer.punchDateStr+ '</td>' ;
@@ -419,24 +507,43 @@
                 		 table_data +='<td>' +' '+ '</td>' ;
                 	 }
            			
-           			table_data += (null == customer.uniqueId)? '<td>' +' '+ '</td>' :'<td>' + customer.uniqueId + '</td>';
-           			
-           			table_data += (null == customer.empId)? '<td>' +' '+ '</td>' :'<td>' + customer.empId + '</td>';
+                    table_data += (null == customer.empId)? '<td>' +' '+ '</td>' :'<td>' + customer.empId + '</td>';
            			
            			if(null != customer.name){
            				table_data += '<td>' + customer.name + '</td>' ;
            			}else{
            				table_data +='<td>' +' '+ '</td>' ;
            			}
+           			table_data += (null == customer.uniqueId)? '<td>' +' '+ '</td>' :'<td>' + customer.uniqueId + '</td>';
+           			
+           			
            			
            			if(null != customer.department){
            				table_data += '<td>' + customer.department + '</td>' ;
            			}else{
            				table_data +='<td>' +' '+ '</td>' ;
            			}
-               	   
-           			if(null != customer.deviceName){
-           				table_data += '<td>' + customer.deviceName + '</td>' ;
+           			
+           			if(null != customer.designation){
+           				table_data += '<td>' + customer.designation + '</td>' ;
+           			}else{
+           				table_data +='<td>' +' '+ '</td>' ;
+           			}
+           			
+           			if(null != customer.area){
+           				table_data += '<td>' + customer.area + '</td>' ;
+           			}else{
+           				table_data +='<td>' +' '+ '</td>' ;
+           			}
+           			
+           			if(null != customer.device){
+           				table_data += '<td>' + customer.device.model + '</td>' ;
+           			}else{
+           				table_data +='<td>' +' '+ '</td>' ;
+           			}
+           			
+           			if(null != customer.device){
+           				table_data += '<td>' + customer.device.name + '</td>' ;
            			}else{
            				table_data +='<td>' +' '+ '</td>' ;
            			}
@@ -598,20 +705,24 @@
 			
 			//Export In Excel
 			$(document).on('click', '.export-data-by-search', function(e) {
-				
+				uncheckedAppend();
 				var type = $(this).val();
-				var id = document.getElementById('id').value;
 				var sDate = document.getElementById('startDate').value;
 	            var eDate = document.getElementById('endDate').value;
                 var employeeId= document.getElementById('employeeId').value;
                 var employeeName = document.getElementById('employeeName').value;
                 var device = document.getElementById('device').value;
+                var deviceType = document.getElementById('deviceType').value;
                 var department = document.getElementById('department').value;
                 var uId = document.getElementById('uniqueId').value;
-				
+                var designation = document.getElementById('designation').value;
+                var area = document.getElementById('area').value;
+                var emp = document.getElementById('employee').value;
+                uncheckedRemove();
                 
                 if("excel" == type){
-                	exportData(id,sDate,eDate,employeeId,employeeName,device,department,uId,"xlsx");
+                	$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn" disabled><i class="las la-download"></i> Export To Excel  <span class="spinner-border spinner-border-sm"></span></button>');
+                	exportData(sDate,eDate,employeeId,employeeName,device,department,uId,designation,area,emp,deviceType,"export-data-by-search","");
                 }
 			})
 			
@@ -620,23 +731,25 @@
 				var type = $(this).val();
                 
                 if("excel" == type){
-                	exportData(null,"","","","","","","","xlsx");
+                	$("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn" disabled><i class="las la-download"></i> Export To Excel  <span class="spinner-border spinner-border-sm"></span></button>');
+                	exportData("","","","","","","","","","","","export-data","");
                 }
 			})
 			
-			function  exportData(id,sDate,eDate,employeeId,employeeName,device,department,uId,flag) {
-				var employee=($("#only-employee").is(":checked")?"Only Employee":"");
+			function  exportData(sDate,eDate,employeeId,employeeName,device,department,uId,designation,area,emp,deviceType,excelButtonClass,flag) {
                 var data = {
-                	"employee":employee,
-					"id":id,
-					"sDate":sDate,
-					"eDate":eDate,
-               		"employeeId":employeeId,
-               		"employeeName" : employeeName,
-               		"department":department,
-               		"device" : device,
-               		"uId":uId,
-	           		"flag":flag
+                		"sDate":sDate,
+    	           		"eDate":eDate,
+    	           		"employeeId":employeeId,
+    	           		"employeeName":employeeName,
+    	           		"uId":uId,
+    	           		"department":department,
+    	           		"designation":designation,
+    	           		"area":area,
+    	           		"device":device,
+    	           		"emp":emp,
+    	           		"deviceType":deviceType,
+	           		    "flag":flag
                 }; 
     	            
                 $.ajax({
@@ -667,12 +780,13 @@
 	                        var url = window.URL || window.webkitURL;
 	                        link = url.createObjectURL(blob);
 	                        var a = $("<a />");
-	                        a.attr("download", "Event_Report_"+currentDate+"."+flag);
+	                        a.attr("download", "Event_Report_"+currentDate+".xlsx");
 	                        a.attr("href", link);
 	                        $("body").append(a);
 	                        a[0].click();
 	                        $("body").remove(a);
 	                    }
+	                    $("#excel-button").html('').append('<button  value ="excel" type="button" class="btn add-btn '+excelButtonClass+'"><i class="las la-download"></i> Export To Excel </button>'); 
 	                }
             })
 		}

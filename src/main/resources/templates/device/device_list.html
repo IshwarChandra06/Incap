@@ -29,20 +29,34 @@
 									Device</li>
 							</ul>
 						</div>
-                         <div class="col-auto float-right ml-auto"  sec:authorize="hasAuthority('device_view')" ><!-- sec:authorize="hasAuthority('device_sync')" -->
-							<a th:href="@{/sync-device}" class="btn add-btn"> <i
-								class="las la-sync"></i> Sync Device
-							</a> <b><span th:text="${message}"></span></b>
-						</div>
+<!-- 						<div class="col-auto float-right ml-auto" sec:authorize="hasAuthority('device_create')"> -->
+<!-- 							 <a th:href="@{/device/new}" class="btn add-btn"><i class="fa fa-plus"></i> Add Device</a> -->
+<!-- 						</div> -->
 					</div>
 				</div>
 				<!-- /Page Header -->
 					
 				<!-- Search Filter -->
-				<div style="display:none">
-					<input type="hidden" id="orginalById">
-					<input type="hidden" id="orginalByName">
+				<div class="row filter-row">
+					<div class="col-sm-6 col-md-3"> 
+						<div class="form-group form-focus select-focus">
+						 	<label ><b>Add Filter:</b></label>
+					        <select id="people" name="people" multiple>
+								<option value="name" >Name</option>
+								<option value="ipAddress" >IP Address</option>
+								<option value="area" >Area</option>
+					        </select>
+						</div>
+					</div>
+
+					<div class="col-sm-6 col-md-1" id="hide-search" style="display: none;"></div>
 				</div>
+				<div style="display:none">
+					<input type="hidden" id="orginalByName">
+					<input type="hidden" id="orginalByIpAddress">
+				</div>
+				<div id= "input-field" class="row"></div>
+				<!-- /Search Filter -->
 				
 				<div class="row">
 					<div class="col-md-12">
@@ -67,7 +81,9 @@
 		</div>
 	</div> 
 	<div style="display:none;">
-		<div sec:authorize="hasAuthority('transaction_by_date')"> <span id="span_transaction"></span></div>
+		<div sec:authorize="hasAuthority('device_update')"> <span id="span_update"></span></div>
+		<div sec:authorize="hasAuthority('device_delete')"> <span id="span_delete"></span></div>
+		<div sec:authorize="hasAuthority('mata_to_device_sync')"> <span id="span_push"></span></div>
 	</div>
 	
 	<div th:replace="matafooter :: footer"></div>
@@ -75,11 +91,16 @@
 
 	<!-- Custom JS -->
 	<script src="/assets/js/app.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <script type="text/javascript" src="/assets/js/jquery.multi-select.js"></script>
     
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("#device_menu").addClass("active");
+			
+			var showUpdate = $("#span_update").length>0;
+			var showDelete = $("#span_delete").length>0;
+			var showPush = $("#span_push").length>0;
 			
 			$(function(){
 		        $('#people').multiSelect();
@@ -91,53 +112,149 @@
 		            'modalHTML': '<div class="multi-select-modal">'
 		        });
 	    	});
-		
 			$("#people").change(function() {
 				var selectedvalue = $("#people").val();
 				var selectedText = $("#people").text();
-				
 	     	    var matches = document.querySelectorAll('input[type="checkbox"]:not(:checked)');
+	     	   for(var i=0; i< matches.length; i++) {
+					var oldInput = document.getElementById(matches[i].value);
+					if(oldInput != null)
+						document.getElementById("remove-element-"+matches[i].value).remove();
+	     	    }
+        	    
+	     	   var inputText = '';
+        	    for(var i=0; i< selectedvalue.length; i++) {
+					var oldInput = document.getElementById(selectedvalue[i]);
+					if(oldInput == null){
+						if(selectedvalue[i]=="status"){
+							inputText += '<div class="col-md-3" id="remove-element-'+selectedvalue[i]+'"><div class="form-group">'+
+							'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
+							'<select class="form-control" id="'+selectedvalue[i]+'">'+
+									'<option value="" >Select Status</option>'+
+									'<option value="active" >Active</option>'+
+									'<option value="inactive" >Inactive</option>'+
+						        '</select>'+
+						'</div></div>';
+						}else{
+							inputText += '<div class="col-md-3" id="remove-element-'+selectedvalue[i]+'"><div class="form-group">'+
+							'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
+							'<input type="text" placeholder="Enter '+selectedvalue[i]+'" id="'+selectedvalue[i]+'" class="form-control">'+
+						'</div></div>';
+						}
+							
+					}
+        	    }
+        	    	
+				document.getElementById("hide-search").remove();
+			
+				inputText +='<div class="col-sm-6 col-md-1" id="hide-search" style="margin-top:34px">'+
+						'<a class="btn btn-success btn-block searchButtonField"> Search </a><br><br>'+
+				'</div>';
+				
+        	    $("#input-field").append(inputText);
+        	    
+        	    if(selectedvalue.length == 0){
+					$("#hide-search").css("display","none"); 
+				 }
+			});
+			
+			
+			function uncheckedRemove(){
+				var matches = document.querySelectorAll('input[type="checkbox"]:not(:checked)');
+				for(var i=0; i< matches.length; i++) {
+					 var oldInput = document.getElementById(matches[i].value);
+					 if(oldInput != null){
+						 oldInput.remove();
+					 }
+	     	    }
+			}
+			
+			function uncheckedAppend(){
+				var matches = document.querySelectorAll('input[type="checkbox"]:not(:checked)');
 	     	    var unchecked ='';
 	     	    for(var i=0; i< matches.length; i++) {
 	     	    	unchecked += '<input type="hidden" id="'+matches[i].value+'"/>';
 	     	    }
-	     	    
-        	    var inputText = '';
-        	    $("#input-field").empty();
-        	   
-				for(var i=0; i< selectedvalue.length; i++) {
-     	    		inputText += '<div class="col-md-3"><div class="form-group">'+
-						'<label><b>'+selectedvalue[i][0].toUpperCase()+ selectedvalue[i].slice(1)+':</b></label> '+
-						'<input type="text" placeholder="Enter '+selectedvalue[i]+'" id="'+selectedvalue[i]+'" class="form-control">'+
-					'</div></div>';
-				}
-				
-        	    $("#input-field").append(inputText+unchecked);
-			});
+	     	    $("#input-field").append(unchecked);
+			}
+			
 			
 			//start sort
 			$(document).on('click', '.sortByField', function(e) {
 				var value = $(this).val();
 				var valueList = value.split("-");
-				ajaxCall("sortByField", "previousPage", valueList[0], valueList[1], valueList[2]);
+				
+				var name= document.getElementById('orginalByName').value;
+				var ipAddress = document.getElementById('orginalByIpAddress').value;
+				
+				
+				ajaxCall(name, ipAddress, "", "sortByField", "previousPage", valueList[0], valueList[1], valueList[2]);
 				
         	})
         	//end sort 
         	
         	$(function(){
-        		ajaxCall("sortByField", "previousPage", 1,"id","desc");
+				var name= document.getElementById('orginalByName').value;
+				var ipAddress = document.getElementById('orginalByIpAddress').value;
+				
+				
+				ajaxCall(name, ipAddress, "", "sortByField", "previousPage", 1,"id","desc");
         	})
         	
 			$(document).on('click', '.previousPage', function(e) {
 				var value = $(this).val();
 				var valueList = value.split("-");
 				
-				ajaxCall( "sortByField", "previousPage", valueList[0],valueList[1],valueList[2]);
+				var name= document.getElementById('orginalByName').value;
+				var ipAddress = document.getElementById('orginalByIpAddress').value;
+				
+				ajaxCall(name, ipAddress, "", "sortByField", "previousPage", valueList[0], valueList[1], valueList[2]);
         	})
 			
+			//start search and sort field
+			$(document).on('click', '.sortBySearchField', function(e) {
+				uncheckedAppend();
+				var value = $(this).val();
+				var valueList = value.split("-");
+				
+				var name = document.getElementById('name').value;
+				var ipAddress = document.getElementById('ipAddress').value;
+				var area = document.getElementById('area').value;
+				uncheckedRemove();
+				ajaxCall(name, ipAddress,area, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+				
+        	})
+        	//end search and sort field
+        	
+        	$(document).on('click', '.nextPage', function(e) {
+        		uncheckedAppend();
+				var value = $(this).val();
+				var valueList = value.split("-");
+				
+
+				var name = document.getElementById('name').value;
+				var ipAddress = document.getElementById('ipAddress').value;
+				var area = document.getElementById('area').value;
+				uncheckedRemove();
+				ajaxCall(name, ipAddress,area, "sortBySearchField", "nextPage", valueList[0],valueList[1],valueList[2]);
+        	})
+			
+        	$(document).on('click', '.searchButtonField', function(e) {
+        		uncheckedAppend();
+				var name = document.getElementById('name').value;
+				var ipAddress = document.getElementById('ipAddress').value;
+				var area = document.getElementById('area').value;
+				uncheckedRemove();
+				ajaxCall(name, ipAddress,area, "sortBySearchField", "nextPage", 1,"id","desc");
+        	})
 	        	
-	        function ajaxCall(headFlag, pageFlag, pageno, sortField,sortDir) {
+	        function ajaxCall(name, ipAddress,area, headFlag, pageFlag, pageno, sortField,sortDir) {
+				console.warn(status)
+				
 				var data = {
+	           		"name":name,
+	           		"ipAddress":ipAddress,
+	           		"area":area,
 	           		"pageno":pageno,
 	           		"sortField":sortField,
 	           		"sortDir":sortDir
@@ -168,26 +285,33 @@
 				var table_header ='';
 				if(result.data.length == 0) {
 					table_header = '<th><b>Id</b></th>'+
-						'<th><b>Name</b></th>';
-							table_header +='<th><b>Url</b></th>';
-
-						table_header += '<th><b>Camera Id</b></th>';
-						
-							table_header +='<th><b>Pull Transaction</b></th>';
+						'<th><b>Name</b></th>'+
+						'<th><b>Area</b></th>'+
+						'<th><b>IP Address</b></th>'+
+						'<th><b>Serial No</b></th>';
+// 						'<th><b>Last Online</b></th>'+
+// 						'<th><b>Ping Status</b></th>';
+// 						if(showPush){
+// 							table_header +='<th><b>Sync Employees To Device</b></th>';
+// 						}
+						if(showUpdate || showDelete){
+							table_header +='<th><b> Actions</b></th>';
+						}
 				}else {
 					
 					table_header = '<th><button  value="'+result.page_number+'-id-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Id</b></button>'+
-		   			'</th><th>'+		
-						'<button  value="'+result.page_number+'-name-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Name</b></button>'+	
-		   			'</th>';
-						table_header +='<th>'+
-			   				'<button  value="'+result.page_number+'-ipAddress-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>URL</b></button>'+
-				   		'</th>';
-		   			
-					table_header +='<th><button  value="'+result.page_number+'-cameraId-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Camera Id</b></button></th>';
-		   			
-						table_header +='<th><b>Sync Transaction</b></th>';
-		   			
+			   			'</th><th>'+		
+							'<button  value="'+result.page_number+'-name-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Name</b></button>'+	
+						'</th><th>'+
+			   				'<button  value="'+result.page_number+'-area-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Area</b></button>'+
+			   			'</th><th>'+
+			   				'<button  value="'+result.page_number+'-ipAddress-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>IP Address</b></button>'+
+			   			'</th><th>'+
+			   				'<button  value="'+result.page_number+'-serialNo-'+result.sortDir+'" type="button" class="btn btn-link '+flag+'"><b>Serial No</b></button>'+
+			   			'</th>';
+					if(showUpdate || showDelete){
+						table_header +='<th><b> Actions</b></th>';
+					}
 				}
 				return table_header;
 			}
@@ -196,27 +320,36 @@
 				var table_data ='';
            		$.each(result.data, function(i, customer) {
            			table_data +='<tr>' +
-               	 	'<td>' + customer.id + '</td>' ;
+               	 	'<td>' + customer.id + '</td>';
                	 	
                		 if(null != customer.name){
             	 		table_data += '<td>' + customer.name + '</td>';
             	 	}else{
             	 		table_data +=  '<td>' + " " + '</td>';
             	 	}
-               	 	
+            	 	if(null != customer.area){
+            	 		table_data += '<td>' + customer.area.name + '</td>';
+            	 	}else{
+            	 		table_data +=  '<td>' + " " + '</td>';
+            	 	}
 	               	 if(null != customer.ipAddress){
 	            	 		table_data += '<td>' + customer.ipAddress + '</td>';
 	            	 	}else{
 	            	 		table_data += '<td>' + " " + '</td>';
 	            	 	}
                	 
-	               	if(null != customer.cameraId){
-	           	 		table_data += '<td>' + customer.cameraId + '</td>';
+	               	if(null != customer.serialNo){
+	           	 		table_data += '<td>' + customer.serialNo + '</td>';
 	           	 	}else{
 	           	 		table_data += '<td>' + " " + '</td>';
 	           	 	}
-               	 	
-						table_data +='<th><a href="/get-transaction-by-date/'+ customer.id +'" class="btn btn-primary"><i class="las la-calculator"></i></a></th>';
+	           	 	
+					if(showUpdate){
+						table_data +='<th><a href="/device/edit/'+ customer.id +'" class="btn btn-primary" ><i class="las la-edit"></i></a>';
+					}
+					if(showDelete){
+						table_data +='&nbsp;&nbsp;<a href="/device/delete/'+ customer.id +'" id="deleteButton" class="btn btn-danger"><i class="las la-trash"></i></a></th>';
+					}
            		});
            		return table_data;
 			}

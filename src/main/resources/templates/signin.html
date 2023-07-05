@@ -13,7 +13,7 @@
         <title>Login - Mata</title>
 		
 		<!-- Favicon -->
-        <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
+        <link rel="shortcut icon" type="image/x-icon" href="/assets/img/mata_logo.png">
 		
 		<!-- Bootstrap CSS -->
         <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -76,33 +76,29 @@
 								<!-- <div class="account-footer">
 									<p>Don't have an account yet? <a href="register.html">Register</a></p>
 								</div> -->
-									<div class="row">
-							<div class="col-xs-12">
-								<div th:if="${param.error}"
-									class="alert alert-danger alert-dismissable">
-									<p>
-										<i class="icon fa fa-ban"></i> <span
-											>Invalid Email Id Or
-											Password.</span>
-									</p>
+								<div class="row">
+									<div class="col">
+										<div th:if="${param.error}"
+											class="alert alert-danger alert-dismissable text-center">
+											<p>
+												<i class="icon fa fa-ban"></i> <span>Invalid Email Id Or Password.</span>
+											</p>
+										</div>
+										<div th:if="${param.logout}"
+											class="alert alert-info alert-dismissable text-center">
+											<p>
+												<i class="icon fa fa-info"></i> <span>You have been logged out.</span>
+											</p>
+										</div>
+										<div th:if="${msg!=null}"
+											class="alert alert-warning alert-dismissable text-center">
+											<p>
+												<i class="icon fa fa-warning"></i> <span th:text="${msg}"></span>
+											</p>
+										</div>
+									</div>
+		
 								</div>
-								<div th:if="${param.logout}"
-									class="alert alert-info alert-dismissable">
-									<p>
-										<i class="icon fa fa-info"></i> <span
-											>You have been logged
-											out.</span>
-									</p>
-								</div>
-								<div th:if="${msg!=null}"
-									class="alert alert-warning alert-dismissable">
-									<p>
-										<i class="icon fa fa-warning"></i> <span th:text="${msg}"></span>
-									</p>
-								</div>
-							</div>
-
-						</div>
 							</form>
 							<!-- /Account Form -->
 							

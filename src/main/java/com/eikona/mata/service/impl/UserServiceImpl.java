@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.eikona.mata.constants.ApplicationConstants;
+import com.eikona.mata.constants.AreaConstants;
 import com.eikona.mata.constants.NumberConstants;
 import com.eikona.mata.constants.UserConstants;
 import com.eikona.mata.dto.PaginationDto;
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public PaginationDto<User> searchByField(Long id, String name, String phone, String role, int pageno,
-			String sortField, String sortDir) {
+			String sortField, String sortDir,  String orgName) {
 
 		if (null == sortDir || sortDir.isEmpty()) {
 			sortDir = ApplicationConstants.ASC;
@@ -85,7 +86,7 @@ public class UserServiceImpl implements UserService {
 			sortField = ApplicationConstants.ID;
 		}
 
-		Page<User> page = getSpecificationOfUser(id, name, phone, role, pageno, sortField, sortDir);
+		Page<User> page = getSpecificationOfUser(id, name, phone, role, pageno, sortField, sortDir, orgName);
 		
 		List<User> userList = page.getContent();
 
@@ -95,7 +96,7 @@ public class UserServiceImpl implements UserService {
 		return dtoList;
 	}
 
-	private Page<User> getSpecificationOfUser(Long id, String name, String phone, String role, int pageno, String sortField, String sortDir) {
+	private Page<User> getSpecificationOfUser(Long id, String name, String phone, String role, int pageno, String sortField, String sortDir,  String orgName) {
 
 		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortField).ascending()
 				: Sort.by(sortField).descending();
@@ -107,9 +108,10 @@ public class UserServiceImpl implements UserService {
 		Specification<User> phoneSpec = generalSpecification.stringSpecification(phone, UserConstants.PHONE);
 		Specification<User> roleSpec = generalSpecification.foreignKeyStringSpecification(role, UserConstants.ROLE, ApplicationConstants.NAME);
 		
+		Specification<User> orgSpec = generalSpecification.foreignKeyStringSpecification(orgName, AreaConstants.ORGANIZATION, ApplicationConstants.NAME);
 		Specification<User> isDeletedFalse = generalSpecification.isDeletedSpecification();
 
-		Page<User> page = userRepository.findAll(idSpec.and(nameSpec).and(isDeletedFalse).and(phoneSpec).and(roleSpec),
+		Page<User> page = userRepository.findAll(idSpec.and(nameSpec).and(isDeletedFalse).and(phoneSpec).and(roleSpec).and(orgSpec),
 				pageable);
 		return page;
 	}

@@ -223,7 +223,10 @@ public class IncapMonthlyAttendanceReportServiceImpl{
 			else
 				monthlyDailyReportDto.setEmpId(ApplicationConstants.DELIMITER_EMPTY);
 			monthlyDailyReportDto.setEmpName(employee.getName());
-			monthlyDailyReportDto.setDepartment(employee.getDepartment());
+			if(null!=employee.getDepartment())
+			  monthlyDailyReportDto.setDepartment(employee.getDepartment().getName());
+			else
+			  monthlyDailyReportDto.setDepartment(ApplicationConstants.DELIMITER_EMPTY);	
 			if(null!=employee.getShift())
 				monthlyDailyReportDto.setShift(employee.getShift().getName());
 			else

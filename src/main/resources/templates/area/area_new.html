@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+ <link th:rel="stylesheet" href="/assets/bootstrap-datetimepicker/css/bootstrap-datetimepicker.css"/>
+ 
+        <link rel="shortcut icon" type="image/x-icon" href="/assets/img/favicon.png">
+		
+		<!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+
+      <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+		
+		<!-- Lineawesome CSS -->
+        <link rel="stylesheet" href="/assets/css/line-awesome.min.css">
+		
+		<!-- Chart CSS -->
+		<link rel="stylesheet" href="/assets/plugins/morris/morris.css">
+		
+		<!-- Main CSS -->
+        <link rel="stylesheet" href="/assets/css/style.css">
+		
+		<!-- Select2 CSS -->
+		<link rel="stylesheet" href="/assets/css/select2.min.css">
+
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/line-awesome.css">
+
+</head>
+<body>
+
+	<!-- Main Wrapper -->
+	<div class="main-wrapper">
+		<div th:replace="matatopmenu :: topmenufragment"></div>
+		<div th:replace="mataleftmenu :: leftmenu"></div>
+
+		<!-- Page Wrapper -->
+		<div class="page-wrapper">
+
+			<!-- Page Content -->
+			<div class="content container-fluid">
+
+				<!-- Page Header -->
+				<div class="page-header">
+					<div class="row align-items-center">
+						<div class="col">
+							<h3 class="page-heaer">
+								<i class="las la-landmark"> <b><span th:text="${title}"></span></b></i>
+							</h3>
+							<br>
+							<ul class="breadcrumb">
+								<li class="breadcrumb-item">Area</li>
+								<li class="breadcrumb-item active"><span th:text="${title}"></span></li>
+							</ul>
+						</div>
+
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6">
+						<div class="card">
+							<div class="card-body">
+								<form action="#" th:action="@{/area/add}" th:object="${area}" onsubmit="return checkDate();" method="POST">
+									<input type="hidden" th:field="*{id}" placeholder="Area Id" class="form-control mb-4 col-4">
+									<input type="hidden" th:value="${title}" name="title" placeholder="Area Id" class="form-control mb-4 col-4">
+									<div class="form-group" style="display:none">
+										<label><b>Organization:</b></label> <select name="worker"
+											th:field="*{organization}" class="form-control">
+											<option th:each="organization : ${listOrganization}"
+												th:value="${organization.id}" th:text="${organization.name}">
+										</select>
+									</div>
+									<div class="form-group">
+										<label><b>Name:<font color="red">*</font></b></label> 
+										<p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="alert alert-danger"></p> 
+										<input type="text" th:field="*{name}" placeholder="Enter Area Name"
+											class="form-control" maxlength="50">
+									</div>
+									<div class="form-group">
+									<label for="time"><b>Limit Start Time:</b></label>
+					                    <div class="input-group date" id="start_time">
+					                        <input type="text" id="time1" value="11:31:00" placeholder="Enter Start Time" class="form-control"
+					                               th:field="*{startTime}"/>
+					                        <div class="input-group-addon input-group-append">
+					                            <div class="input-group-text">
+					                              <i class="fa fa-clock-o"></i>
+					                            </div>
+					                        </div>
+					                    </div>
+									
+									</div>
+									<div class="form-group">
+									<label for="time"><b>Limit End Time:</b></label>
+					                    <div class="input-group date" id="end_time">
+					                        <input type="text" id="time2" value="11:31:00" placeholder="Enter End Time" class="form-control"
+					                               th:field="*{endTime}"/>
+					                        <div class="input-group-addon input-group-append">
+					                            <div class="input-group-text">
+					                               <i class="fa fa-clock-o"></i>
+					                            </div>
+					                        </div>
+					                    </div>
+									</div>
+									<div class="form-group">
+										<label><b>Description:</b></label>
+										<textarea th:field="*{description}" placeholder="Enter Description"
+											class="form-control" rows="5" cols="8" maxlength="200"></textarea>
+									</div>
+									
+									<div class="text-right">
+										<button type="submit" class="btn btn-primary">Submit</button>
+									    <a class="btn btn-danger" th:href="@{/area}">Cancel</a>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div th:replace="matafooter :: footer"></div>
+	<script src="/assets/js/app.js"></script> 
+
+<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script src="/assets/moment/moment.min.js"></script>
+<script src="/assets/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+
+<script>
+    $('#start_time').datetimepicker({
+        "allowInputToggle": true,
+        "showClose": true,
+        "showClear": true,
+        "showTodayButton": true,
+        "format": "HH:mm:ss",
+    });
+    $('#end_time').datetimepicker({
+        "allowInputToggle": true,
+        "showClose": true,
+        "showClear": true,
+        "showTodayButton": true,
+        "format": "HH:mm:ss",
+    });
+    
+    function checkDate() {
+		
+		var from = document.getElementById('time1').value;
+        var to = document.getElementById('time2').value;
+        
+		if(from.length!==0 && to.length===0){
+			var sdate = $("#time1").empty();
+			 alert("Limit End Time Can't Be Empty!");
+			 return false;
+		}else if(to.length!==0 && from.length===0){
+			var edate = $("#time2").empty();
+			 alert("Limit Start Time Can't Be Empty!");
+			 return false;
+		}
+		return true;
+	}
+    
+</script>
+</body>
+</html>

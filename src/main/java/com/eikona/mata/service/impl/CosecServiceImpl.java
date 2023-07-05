@@ -12,7 +12,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.eikona.mata.constants.ApplicationConstants;
@@ -44,9 +43,9 @@ public class CosecServiceImpl {
 	@Autowired
 	private GeneralSpecificationUtil<Transaction> generalSpecification;
 	
-	@Scheduled(cron = "0 0 1 * * *")
+	//@Scheduled(cron = "0 0 1 * * *")
 	public void autoSyncTransactionToCosec() {
-		List<String> employeeIdList = employeeRepository.findAllEmployeeByDepartmentCustom();
+		List<String> employeeIdList = employeeRepository.findAllEmployeeIdCustom();
 		SimpleDateFormat dateFormat = new SimpleDateFormat(ApplicationConstants.DATE_FORMAT_OF_US);
 		
 		String dateStr = dateFormat.format(new Date());
@@ -57,9 +56,19 @@ public class CosecServiceImpl {
 			
 			List<TransactionDto> transactionDtoList = transactionRepository.findMinAndMaxEventByDateCustom(employeeIdList, startDate, endDate);
 			for(TransactionDto transactionDto : transactionDtoList) {
-				cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckInTime(), 0);
+				try {
+					cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckInTime(), 0);
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+				
 				if(transactionDto.getCheckInTime().before(transactionDto.getCheckOutTime())) {
-					cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckOutTime(), 1);
+					try {
+						cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckOutTime(), 1);
+					}catch (Exception e) {
+						e.printStackTrace();
+					}
+					
 				}
 			}
 			
@@ -67,28 +76,89 @@ public class CosecServiceImpl {
 			e.printStackTrace();
 		}
 	}
-	public void syncEventFromMataToCosecDepartmentWise(String sDate, String eDate, String department) throws Exception {
-		SimpleDateFormat inputformatStr = new SimpleDateFormat(ApplicationConstants.DATE_TIME_FORMAT_OF_INDIA_SPLIT_BY_SLASH);
-		SimpleDateFormat format = new SimpleDateFormat(ApplicationConstants.DATE_TIME_FORMAT_OF_US);
+	
+//	@Scheduled(cron = "0 0 1 * * *")
+//	public void autoSyncTransactionToCosec() {
+//		try {
+//			SimpleDateFormat dateFormat = new SimpleDateFormat(ApplicationConstants.DATE_FORMAT_OF_US);
+//			
+//			String dateStr = dateFormat.format(new Date());
+//			int flag=0;
+//			
+//			
+//				Date startDate = calendarUtil.getPreviousDate(dateFormat.parse(dateStr), -1, 0, 0, 0);
+//				List<Transaction> transactionDtoList = transactionRepository.findAllByDateCustom(dateFormat.format(startDate));
+//				for(Transaction transaction : transactionDtoList) {
+//					if(transaction.getDeviceName().contains("Exit"))
+//						flag=1;
+//					else
+//						flag=0;
+//					try {
+//					cosecTransactionUtil.transactionAutoSyncToCosec(transaction.getEmpId(), transaction.getPunchDate(), flag);
+//				}catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//				
+//			} 
+//		}catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//	}
+	public void syncEventFromMataToCosecDepartmentWise(String sDate, String eDate, String department){
+		try {
+			SimpleDateFormat inputformatStr = new SimpleDateFormat(ApplicationConstants.DATE_TIME_FORMAT_OF_INDIA_SPLIT_BY_SLASH);
+			SimpleDateFormat format = new SimpleDateFormat(ApplicationConstants.DATE_TIME_FORMAT_OF_US);
 
-		    Date startDate = null;
-		    Date endDate = null;
-			startDate = inputformatStr.parse(sDate);
-			endDate = inputformatStr.parse(eDate);
+			    Date startDate = null;
+			    Date endDate = null;
+				startDate = inputformatStr.parse(sDate);
+				endDate = inputformatStr.parse(eDate);
 
-			String sDateStr = format.format(startDate);
-			String eDateStr = format.format(endDate);
+				String sDateStr = format.format(startDate);
+				String eDateStr = format.format(endDate);
 
-			startDate = format.parse(sDateStr);
-			endDate = format.parse(eDateStr);
-			
-			List<TransactionDto> transactionDtoList = transactionRepository.findMinAndMaxEventByDateAndDepartmentCustom(department,startDate, endDate);
+				startDate = format.parse(sDateStr);
+				endDate = format.parse(eDateStr);
+				
+				List<String> employeeIdList = employeeRepository.findAllEmployeeIdCustom();
+				
+				List<TransactionDto> transactionDtoList = transactionRepository.findMinAndMaxEventByDateCustom(employeeIdList, startDate, endDate);
 				for(TransactionDto transactionDto : transactionDtoList) {
-					cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckInTime(), 0);
+					try {
+						cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckInTime(), 0);	
+					}catch (Exception e) {
+						e.printStackTrace();
+					}
+					
 					if(transactionDto.getCheckInTime().before(transactionDto.getCheckOutTime())) {
-						cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckOutTime(), 1);
+						try {
+							cosecTransactionUtil.transactionAutoSyncToCosec(transactionDto.getEmpId(), transactionDto.getCheckOutTime(), 1);
+						}catch (Exception e) {
+							e.printStackTrace();
+						}
+						
 					}
 				}
+				
+//				int flag=0;
+//				
+//				List<Transaction> transactionList = transactionRepository.findAllByDateRangeCustom(department,startDate, endDate);
+//					for(Transaction transaction : transactionList) {
+//						if(transaction.getDeviceName().contains("Exit"))
+//							flag=1;
+//						else
+//							flag=0;
+//						try {
+//							cosecTransactionUtil.transactionAutoSyncToCosec(transaction.getEmpId(), transaction.getPunchDate(), flag);
+//						}catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//					}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 				
 	}
 	//------------------------------------------------------------------->Old Syncing Concept<------------------------------------------------------------------//

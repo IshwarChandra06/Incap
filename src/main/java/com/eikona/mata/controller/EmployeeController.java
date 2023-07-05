@@ -1,17 +1,27 @@
 package com.eikona.mata.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -24,20 +34,55 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.eikona.mata.dto.PaginationDto;
+import com.eikona.mata.entity.Area;
 import com.eikona.mata.entity.Employee;
+import com.eikona.mata.entity.Image;
+import com.eikona.mata.entity.User;
+import com.eikona.mata.repository.AreaRepository;
+import com.eikona.mata.repository.DepartmentRepository;
+import com.eikona.mata.repository.DesignationRepository;
+import com.eikona.mata.repository.EmployeeRepository;
+import com.eikona.mata.repository.ImageRepository;
+import com.eikona.mata.repository.UserRepository;
 import com.eikona.mata.service.EmployeeService;
+import com.eikona.mata.service.OrganizationService;
 import com.eikona.mata.util.ExportEmployee;
+import com.eikona.mata.util.ImageProcessingUtil;
 
 @Controller
 public class EmployeeController {
 
 	@Autowired
 	private EmployeeService employeeService;
+	
+	@Autowired
+	private OrganizationService organizationService;
 
 	@Autowired
+	private ImageProcessingUtil imageProcessingUtil;
+	
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Autowired
+	private EmployeeRepository employeeRepository;
+	
+	@Autowired
+	private DepartmentRepository departmentRepository;
+	
+	@Autowired
+	private DesignationRepository designationRepository;
+	
+	@Autowired
+	private AreaRepository areaRepository;
+	
+	@Autowired
 	private ExportEmployee exportEmployee;
+	
+	@Autowired
+	private ImageRepository imageRepository;
 
-	@GetMapping({ "/", "/employee" })
+	@GetMapping("/employee" )
 	@PreAuthorize("hasAuthority('employee_view')")
 	public String employeeList(Model model) {
 		return "employee/employee_list";
@@ -50,46 +95,94 @@ public class EmployeeController {
 		return "multipartfile/uploadCosecEmployeeList";
 	}
 
-	@PostMapping("/upload/cosec/employee-list/excel")
+	@PostMapping("/upload/employee-list/excel")
 	@PreAuthorize("hasAuthority('employee_import')")
-	public String uploadCosecEmployeeList(@RequestParam("uploadfile") MultipartFile file, Model model) {
-		String message = employeeService.storeCosecEmployeeList(file);
+	public String uploadCosecEmployeeList(@RequestParam("uploadfile") MultipartFile file, Model model,Principal principal) {
+		String message = employeeService.storeCosecEmployeeList(file,principal);
 		model.addAttribute("message", message);
 		return "multipartfile/uploadCosecEmployeeList";
 	}
 
-	// Import Employee
-	@GetMapping("/import/employee-shift-list")
+
+	@GetMapping("/update-employee-area")
+	public String updateArea(Model model,Principal principal) {
+		User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+		List<Employee>empList=employeeRepository.findAllByOrganizationAndEmptyAreaCustom(user.getOrganization());
+		List<Area> areaList=areaRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization());
+		for(Employee emp:empList) {
+			
+			List<Image> imageList = imageRepository.findByEmployeeOrderByIdDesc(emp);
+			if (!imageList.isEmpty()) {
+			emp.setArea(areaList);
+			employeeRepository.save(emp);
+			}
+		}
+		return "redirect:/employee";
+	}
+	
+	@GetMapping("/import/employee-delete-list")
 	@PreAuthorize("hasAuthority('employee_import')")
-	public String importEmployeeShiftList() {
-		return "multipartfile/uploadEmployeeShiftList";
+	public String importEmployeeDeleteList() {
+		return "multipartfile/uploadEmployeeDeleteList";
 	}
 
-	@PostMapping("/upload/employee-shift-list/excel")
+	@PostMapping("/upload/employee-delete-list/excel")
 	@PreAuthorize("hasAuthority('employee_import')")
-	public String uploadEmployeeShiftList(@RequestParam("uploadfile") MultipartFile file, Model model) {
-		String message = employeeService.storeEmployeeShiftList(file);
+	public String uploadEmployeeDeleteList(@RequestParam("uploadfile") MultipartFile file, Model model) {
+		String message = employeeService.deleteEmployeeList(file);
 		model.addAttribute("message", message);
-		return "multipartfile/uploadEmployeeShiftList";
+		return "multipartfile/uploadEmployeeDeleteList";
+	}
+	// Import Image
+	@GetMapping("/employee/new")
+	@PreAuthorize("hasAuthority('employee_create')")
+	public String newEmployee(Model model, Principal principal) {
+
+		User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+		model.addAttribute("listOrganization", organizationService.getById(user.getOrganization().getId()));
+		model.addAttribute("listDepartment", departmentRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization()));
+		model.addAttribute("listDesignation", designationRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization()));
+		Employee employee = new Employee();
+		model.addAttribute("employee", employee);
+		model.addAttribute("title", "New Employee");
+		return "employee/employee_new";
 	}
 
 	@PostMapping("/employee/add")
 	@PreAuthorize("hasAnyAuthority('employee_create','employee_update')")
-	public String saveEmployee(@ModelAttribute("employee") Employee employee, Model model, @Valid Employee emp,
-			Errors errors, String title) {
+	public String saveEmployee(@RequestParam("files") MultipartFile file, @ModelAttribute("employee") Employee employee,
+			Model model, @Valid Employee emp, Errors errors, String title,BindingResult bindingResult, Principal principal) {
 		if (errors.hasErrors()) {
+			User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+			model.addAttribute("listOrganization", organizationService.getById(user.getOrganization().getId()));
+			model.addAttribute("listDepartment", departmentRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization()));
+			model.addAttribute("listDesignation", designationRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization()));
 			model.addAttribute("title", title);
 			return "employee/employee_new";
 		} else {
+			
 			if (null == employee.getId()) {
-				employee = employeeService.save(employee);
+				Employee findEmployee= employeeRepository.findByEmpIdAndIsDeletedFalse(employee.getEmpId());
+				if(null!=findEmployee){
+					model.addAttribute("title", title);
+				    bindingResult.rejectValue("empId", "error.empId", "Employee id is already exist!");
+				    return "employee/employee_new";
+				}
+				employee=employeeService.save(employee);
+				if (null != file && !file.getOriginalFilename().isEmpty()) {
+					imageProcessingUtil.saveEmployeeImageWhileEnrolling(file,employee);
+				}
 
 			} else {
 				Employee employeeObj = employeeService.getById(employee.getId());
 				employee.setCreatedBy(employeeObj.getCreatedBy());
 				employee.setCreatedDate(employeeObj.getCreatedDate());
-				employee = employeeService.save(employee);
-
+				employee.setArea(employeeObj.getArea());
+				employee=employeeService.save(employee);
+				if (null != file && !file.getOriginalFilename().isEmpty()) {
+					imageProcessingUtil.saveEmployeeImageWhileEnrolling(file,employee);
+				}
+				
 			}
 
 			return "redirect:/employee";
@@ -98,7 +191,12 @@ public class EmployeeController {
 
 	@GetMapping("/employee/edit/{id}")
 	@PreAuthorize("hasAuthority('employee_update')")
-	public String editEmployee(@PathVariable(value = "id") long id, Model model) {
+	public String editEmployee(@PathVariable(value = "id") long id, Model model, Principal principal) {
+
+		User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+		model.addAttribute("listOrganization", organizationService.getById(user.getOrganization().getId()));
+		model.addAttribute("listDepartment", departmentRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization()));
+		model.addAttribute("listDesignation", designationRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization()));
 
 		Employee employee = employeeService.getById(id);
 		model.addAttribute("employee", employee);
@@ -108,36 +206,81 @@ public class EmployeeController {
 
 	@GetMapping("/employee/delete/{id}")
 	@PreAuthorize("hasAuthority('employee_delete')")
-	public String deleteEmployee(@PathVariable(value = "id") long id) {
-		this.employeeService.deleteById(id);
+	public String deleteEmployee(@PathVariable(value = "id") long id, Principal principal) {
+		this.employeeService.deleteById(id, principal);
 		return "redirect:/employee";
 	}
+	
+	@GetMapping("/employee-to-area/association/{id}")
+	@PreAuthorize("hasAuthority('employee_area_association')")
+	public String employeeAreaAssociation(@PathVariable(value = "id") long id, Model model, Principal principal) {
 
-	@RequestMapping(value = "/api/search/employee", method = RequestMethod.GET)
-	@PreAuthorize("hasAuthority('employee_view')")
-	public @ResponseBody PaginationDto<Employee> searchEmployee(Long id, String name, String empId, String department,String uId,
-			int pageno, String sortField, String sortDir, Principal principal) {
+		User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
 
-		PaginationDto<Employee> dtoList = employeeService.searchByField(id, name, empId, department,uId, pageno, sortField,
-				sortDir);
-		return dtoList;
+		List<Area> areaList = areaRepository.findByOrganizationAndIsDeletedFalse(user.getOrganization());
+		model.addAttribute("listArea", areaList);
+		Employee employee = employeeService.getById(id);
+		model.addAttribute("employee", employee);
+		model.addAttribute("id", id);
+		return "employee/employee_area";
 	}
 
-	@RequestMapping(value = "/api/employee/export-to-excel", method = RequestMethod.GET)
+	@PostMapping("/employee-to-area/association/save")
+	@PreAuthorize("hasAuthority('employee_area_association')")
+	public String saveEmployeeAreaAssociation(@ModelAttribute("employee") Employee employee, Long id) {
+		
+		employeeService.saveEmployeeAreaAssociation(employee, id);
+		return "redirect:/employee";
+
+	}
+	
+	@RequestMapping(value = "/api/search/employee", method = RequestMethod.GET)
+	@PreAuthorize("hasAuthority('employee_view')")
+	public @ResponseBody PaginationDto<Employee> searchEmployee(String name,String empId,String uniqueId,String department,String designation, int pageno, String sortField, String sortDir, Principal principal) {
+		
+		User user = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+		String orgname = (null == user.getOrganization()?null:user.getOrganization().getName());
+		PaginationDto<Employee> dtoList = employeeService.searchByField(name,empId,department,designation,uniqueId,pageno, sortField, sortDir, orgname);
+		return dtoList;
+	}
+	
+	@RequestMapping(value="/api/employee/export-to-excel",method = RequestMethod.GET)
 	@PreAuthorize("hasAuthority('employee_export')")
-	public void exportToFile(HttpServletResponse response, Long id, String name, String empId, String department, String uId,
-			String flag, Principal principal) {
-		response.setContentType("application/octet-stream");
-		DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
-		String currentDateTime = dateFormat.format(new Date());
-		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=Employee_master_data" + currentDateTime + "." + flag;
-		response.setHeader(headerKey, headerValue);
+	public void exportToFile(HttpServletResponse response,String name,String empId,String uniqueId,String department,String designation,String flag, Principal principal) {
+		User userObj = userRepository.findByUserNameAndIsDeletedFalse(principal.getName());
+		String orgName = (null == userObj.getOrganization()? null : userObj.getOrganization().getName());
+		 response.setContentType("application/octet-stream");
+			DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
+			String currentDateTime = dateFormat.format(new Date());
+			String headerKey = "Content-Disposition";
+			String headerValue = "attachment; filename=Employee_master_data" + currentDateTime + "."+flag;
+			response.setHeader(headerKey, headerValue);
 		try {
-			exportEmployee.fileExportBySearchValue(response, id, name, empId, department,uId, flag);
-		} catch (Exception e) {
+			exportEmployee.fileExportBySearchValue(response,name, empId,department,designation,uniqueId, flag, orgName);
+		} catch (Exception  e) {
 			e.printStackTrace();
 		}
 	}
-
+	@GetMapping("/excel-template-download")
+	@PreAuthorize("hasAuthority('employee_import')")
+	public void downloadEmployeeListExcelTemplate(HttpServletResponse response) throws IOException {
+//		String filename = "src/main/resources/static/excel/Employee_import_template.xlsx";
+        String filename = "excel/Employee_import_template.xlsx";
+        try {
+        	
+        	String headerKey = "Content-Disposition";
+			String headerValue = "attachment; filename=Employee_import_template.xlsx";
+			response.setHeader(headerKey, headerValue);
+			FileInputStream inputStream = new FileInputStream(new File(filename));
+			Workbook workBook = new XSSFWorkbook(inputStream);
+			FileOutputStream fileOut = new FileOutputStream(filename);
+			workBook.write(fileOut);
+			ServletOutputStream outputStream = response.getOutputStream();
+			workBook.write(outputStream);
+			workBook.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 }

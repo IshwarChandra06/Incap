@@ -59,4 +59,5 @@ public final class HeaderConstants {
 	public static final String TIME = "Time";
 	public static final String DEVICE = "Device Name";
 	public static final String EMPLOYEE_TYPE = "Employee Type";
+	public static final String AREA = "Area";
 }
